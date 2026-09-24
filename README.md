@@ -16,6 +16,10 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 3.3 | Pipe, Wildcard & Redirection | ✅ | [Lihat](lab-3.3-pipe-wildcard-redirection.md) |
 | 3.4 | `ls` Command & Pipe Combination | ✅ | [Lihat](lab-3.4-ls-command.md) |
 
+## 📖 Referensi Cepat
+
+- [🐧 Linux SysAdmin Cheatsheet](cheatsheet.md) — rangkuman semua perintah Lab 3.1–3.4
+
 ## 📬 Kontak
 
 - GitHub: [@paladxn](https://github.com/paladxn)
