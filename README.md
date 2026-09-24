@@ -27,3 +27,5 @@ Proyek ini dilisensikan di bawah [MIT License](LICENSE).
 ## 📬 Kontak
 
 - GitHub: [@paladxn](https://github.com/paladxn)
+  
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
