@@ -1,4 +1,4 @@
-# Lab 3.4 — File & Directory Operations
+# Lab 3.1 — File & Directory Operations
 
 **Course:** Linux System Administration (Adinusa)
 **Topic:** Basic file and directory management
