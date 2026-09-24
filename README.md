@@ -13,6 +13,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 |-----|-------|--------|------|
 | 3.1 | File & Directory Operations | ✅ | [Lihat](lab-3.1-file-directory.md) |
 | 3.2 | Nano & Vim Text Editor | ✅ | [Lihat](lab-3.2-nano-vim.md) |
+| 3.3 | Pipe, Wildcard & Redirection | ✅ | [Lihat](lab-3.3-pipe-wildcard-redirection.md) |
 
 ## 📬 Kontak
 
