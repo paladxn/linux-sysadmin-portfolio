@@ -1,7 +1,7 @@
 # Linux SysAdmin Portfolio
 
 Portofolio belajar **Linux System Administration** - (hanya berisi catatan pribadi),
-lab, dan skrip latihan yang saya kerjakan sendiri.
+lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang telah saya lalui.
 
 > ⚠️ **Disclaimer:** Materi asli dari kursus Adinusa tidak
 > didistribusikan di repositori ini. Semua catatan ditulis ulang
