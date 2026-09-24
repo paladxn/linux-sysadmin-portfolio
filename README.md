@@ -20,6 +20,10 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 
 - [🐧 Linux SysAdmin Cheatsheet](cheatsheet.md) — rangkuman semua perintah Lab 3.1–3.4
 
+## 📄 Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+
 ## 📬 Kontak
 
 - GitHub: [@paladxn](https://github.com/paladxn)
