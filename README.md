@@ -11,7 +11,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri.
 
 | Lab | Topik | Status | Link |
 |-----|-------|--------|------|
-| 3.4 | File & Directory Operations | ✅ | [Lihat](03-file-directory/lab-3.4-file-directory.md) |
+| 3.4 | File & Directory Operations | ✅ | [Lihat](lab-3.4-file-directory.md) |
 
 ## 📬 Kontak
 
