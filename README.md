@@ -12,6 +12,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri.
 | Lab | Topik | Status | Link |
 |-----|-------|--------|------|
 | 3.1 | File & Directory Operations | ✅ | [Lihat](lab-3.1-file-directory.md) |
+| 3.2 | Nano & Vim Text Editor | ✅ | [Lihat](lab-3.2-nano-vim.md) |
 
 ## 📬 Kontak
 
