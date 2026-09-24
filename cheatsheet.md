@@ -174,6 +174,46 @@ $ ls -lah
 
 ---
 
+## ⚙️ 11. Resource Limits (`ulimit`)
+
+| Perintah | Fungsi |
+|---|---|
+| `ulimit -a` | Tampilkan semua limit |
+| `ulimit -n` | Lihat/set limit open files |
+| `ulimit -u` | Lihat/set limit proses per user |
+| `ulimit -c` | Lihat/set limit core file size |
+| `ulimit -f` | Lihat/set limit ukuran file |
+| `sudo nano /etc/security/limits.conf` | Edit limit permanen |
+
+---
+
+### Persistent Limits (`/etc/security/limits.conf`)
+
+```
+<domain>   <type>   <item>   <value>
+```
+
+| Field | Nilai |
+|---|---|
+| `<domain>` | Username, `@groupname`, atau `*` |
+| `<type>` | `soft`, `hard`, atau `-` |
+| `<item>` | `nproc`, `nofile`, `core`, dll |
+
+**Contoh:**
+
+```
+@student   hard   nproc   100
+student    soft   nofile  2000
+student    hard   nofile  3000
+```
+
+**Verifikasi:**
+```bash
+$ ulimit -n     # soft limit
+$ ulimit -Hn    # hard limit
+$ ulimit -u     # max processes
+```
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
