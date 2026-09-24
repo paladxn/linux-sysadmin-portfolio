@@ -15,6 +15,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 3.2 | Nano & Vim Text Editor | ✅ | [Lihat](lab-3.2-nano-vim.md) |
 | 3.3 | Pipe, Wildcard & Redirection | ✅ | [Lihat](lab-3.3-pipe-wildcard-redirection.md) |
 | 3.4 | `ls` Command & Pipe Combination | ✅ | [Lihat](lab-3.4-ls-command.md) |
+| 4.1 | Resource Limits dengan `ulimit` | ✅ | [Lihat](lab-4.1-ulimit.md) |
 
 ## 📖 Referensi Cepat
 
