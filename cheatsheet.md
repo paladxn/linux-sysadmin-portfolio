@@ -234,9 +234,3 @@ $ ulimit -u     # max processes
 
 ---
 
-**Referensi Lab:**
-
-- [Lab 3.1 — File & Directory Operations](lab-3.1-file-directory.md)
-- [Lab 3.2 — Nano & Vim Text Editor](lab-3.2-nano-vim.md)
-- [Lab 3.3 — Pipe, Wildcard & Redirection](lab-3.3-pipe-wildcard-redirection.md)
-- [Lab 3.4 — `ls` Command & Pipe Combination](lab-3.4-ls-command.md)
