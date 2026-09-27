@@ -213,6 +213,19 @@ $ ulimit -n     # soft limit
 $ ulimit -Hn    # hard limit
 $ ulimit -u     # max processes
 ```
+## 🎯 12. Process Management
+
+| Perintah | Fungsi |
+|---|---|
+| `command &` | Jalankan proses di background |
+| `ps aux \| grep nama` | Cari proses berdasarkan nama |
+| `pgrep -f pola` | Dapatkan PID berdasarkan pola |
+| `kill PID` | Kirim `SIGTERM` ke proses |
+| `kill -9 PID` | Paksa hentikan (`SIGKILL`) |
+| `killall nama` | Hentikan semua proses dengan nama sama |
+| `pkill -f pola` | Hentikan proses berdasarkan pola |
+| `jobs` | Daftar job di shell |
+| `fg` / `bg` | Pindah job ke foreground / background |
 
 ## 📌 Disclaimer
 
