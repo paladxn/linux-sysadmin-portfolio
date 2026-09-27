@@ -17,6 +17,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 3.4 | `ls` Command & Pipe Combination | ✅ | [Lihat](lab-3.4-ls-command.md) |
 | 4.1 | Resource Limits dengan `ulimit` | ✅ | [Lihat](lab-4.1-ulimit.md) |
 | 4.2 | Konfigurasi Persistent Resource Limits | ✅ | [Lihat](lab-4.2-persistent-resource-limits.md) |
+| 5.1 | Process Termination (`kill`, `killall`, `pkill`) | ✅ | [Lihat](lab-5.1-kill-pkill.md) |
 
 ## 📖 Referensi Cepat
 
