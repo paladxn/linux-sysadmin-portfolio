@@ -1,4 +1,4 @@
-# Lab 3.1 — File & Directory Operations
+# 03-file-directory/lab-3.1-file-directory.md
 
 **Course:** Linux System Administration (Adinusa)
 **Topic:** Basic file and directory management
