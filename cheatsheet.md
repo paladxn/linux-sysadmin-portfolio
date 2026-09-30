@@ -227,6 +227,20 @@ $ ulimit -u     # max processes
 | `jobs` | Daftar job di shell |
 | `fg` / `bg` | Pindah job ke foreground / background |
 
+## 📦 13. Package Management (APT)
+
+| Perintah | Fungsi |
+|---|---|
+| `sudo apt update` | Update daftar paket |
+| `sudo apt upgrade -y` | Upgrade paket terinstal |
+| `apt search <kata>` | Cari paket |
+| `apt show <paket>` | Detail paket |
+| `sudo apt install <paket> -y` | Instal paket |
+| `apt list --installed` | Daftar paket terinstal |
+| `sudo apt remove <paket>` | Hapus paket |
+| `sudo apt purge <paket>` | Hapus paket + konfigurasi |
+| `sudo apt autoremove` | Hapus dependensi tak terpakai |
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
