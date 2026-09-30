@@ -241,6 +241,19 @@ $ ulimit -u     # max processes
 | `sudo apt purge <paket>` | Hapus paket + konfigurasi |
 | `sudo apt autoremove` | Hapus dependensi tak terpakai |
 
+## 📦 14. External Repository & Version Pinning
+
+| Perintah | Fungsi |
+|---|---|
+| `curl -LsS <url> -o script` | Download script setup |
+| `sudo ./mariadb_repo_setup --mariadb-server-version="mariadb-10.11"` | Setup repository MariaDB |
+| `sudo tee /etc/apt/sources.list.d/mariadb.list` | Buat file repository manual |
+| `apt-cache policy <paket>` | Cek versi yang tersedia |
+| `sudo apt install <paket>=<versi>` | Instal versi spesifik |
+| `apt-mark hold <paket>` | Kunci versi paket |
+| `lsb_release -cs` | Cek codename distro |
+| `sudo apt update` | Update index setelah tambah repository |
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
