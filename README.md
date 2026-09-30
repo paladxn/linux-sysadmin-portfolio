@@ -18,6 +18,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 4.1 | Resource Limits dengan `ulimit` | ✅ | [Lihat](04-user-resource/lab-4.1-ulimit.md) |
 | 4.2 | Konfigurasi Persistent Resource Limits | ✅ | [Lihat](04-user-resource/lab-4.2-persistent-resource-limits.md) |
 | 5.1 | Process Termination (`kill`, `killall`, `pkill`) | ✅ | [Lihat](05-process-management/lab-5.1-kill-pkill.md) |
+| 6.1 | Package Management dengan APT | ✅ | [Lihat](06-package-management/lab-6.1-apt.md) |
 
 ## 📖 Referensi Cepat
 
