@@ -254,6 +254,18 @@ $ ulimit -u     # max processes
 | `lsb_release -cs` | Cek codename distro |
 | `sudo apt update` | Update index setelah tambah repository |
 
+## 📊 15. Monitoring CPU & Load
+
+| Perintah | Fungsi |
+|---|---|
+| `lscpu` | Info CPU (jumlah, arsitektur) |
+| `nproc` | Jumlah logical CPU |
+| `top` | Monitor proses real-time |
+| `top -bn1` | Mode batch 1 iterasi |
+| `top` interaktif: `l` `t` `m` `P` `M` `1` `k` `q` | Toggle header, sort, per-CPU, kill, quit |
+| Load average | Rata-rata proses menunggu CPU (1, 5, 15 menit) |
+| Aturan load | Load = jumlah CPU → CPU 100% penuh |
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
