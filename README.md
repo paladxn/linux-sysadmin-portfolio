@@ -20,6 +20,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 5.1 | Process Termination (`kill`, `killall`, `pkill`) | ✅ | [Lihat](05-process-management/lab-5.1-kill-pkill.md) |
 | 6.1 | Package Management dengan APT | ✅ | [Lihat](06-package-management/lab-6.1-apt.md) |
 | 6.2 | External Repository & Version Pinning | ✅ | [Lihat](06-package-management/lab-6.2-external-repository.md) |
+| 7.1 | Monitoring CPU & Load Average dengan `top` | ✅ | [Lihat](07-monitoring/lab-7.1-top-load-average.md) |
 
 ## 📖 Referensi Cepat
 
