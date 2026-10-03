@@ -266,6 +266,21 @@ $ ulimit -u     # max processes
 | Load average | Rata-rata proses menunggu CPU (1, 5, 15 menit) |
 | Aturan load | Load = jumlah CPU → CPU 100% penuh |
 
+## 🔗 16. Inode & Hard Links
+
+| Perintah | Fungsi |
+|---|---|
+| `ls -li file` | Lihat inode number + link count |
+| `ln source target` | Buat hard link |
+| `ln -s source target` | Buat symbolic link |
+| `stat file` | Info lengkap (inode, link count, device) |
+| `df -h /path` | Lihat filesystem dari path |
+
+**Aturan:**
+- Hard link → inode sama, hanya bisa dalam filesystem yang sama, tidak bisa ke direktori.
+- Symbolic link → inode berbeda, bisa lintas filesystem.
+- Data hilang hanya saat link count = 0.
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
