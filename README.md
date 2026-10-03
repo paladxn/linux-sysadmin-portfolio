@@ -22,6 +22,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 6.2 | External Repository & Version Pinning | ✅ | [Lihat](06-package-management/lab-6.2-external-repository.md) |
 | 7.1 | Monitoring CPU & Load Average dengan `top` | ✅ | [Lihat](07-monitoring/lab-7.1-top-load-average.md) |
 | 8.1 | Hard Links & Inode | ✅ | [Lihat](08-filesystem/lab-8.1-hard-links-inode.md) |
+| 8.2 | Symbolic Link (Soft Link) | ✅ | [Lihat](08-filesystem/lab-8.2-symbolic-link.md) |
 
 ## 📖 Referensi Cepat
 
