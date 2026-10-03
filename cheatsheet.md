@@ -289,6 +289,20 @@ $ ulimit -u     # max processes
 | `stat file` | Info lengkap (inode, link count, device) |
 | `df -h /path` | Lihat filesystem dari path |
 
+### Symlink ke Direktori
+
+```bash
+$ ln -s /tmp ~/tmplink       # symlink ke direktori /tmp
+$ ls ~/tmplink                # lihat isi /tmp
+$ readlink ~/tmplink          # → /tmp
+```
+
+**Peringatan:** Saat menghapus symlink ke direktori, jangan pakai trailing slash:
+```bash
+$ rm ~/tmplink                # ✅ aman (hapus symlink saja)
+$ rm -r ~/tmplink/            # ❌ bahaya (hapus isi /tmp!)
+```
+
 **Perbedaan Hard Link vs Symbolic Link:**
 
 | Aspek | Hard Link | Symbolic Link |
