@@ -276,6 +276,30 @@ $ ulimit -u     # max processes
 | `stat file` | Info lengkap (inode, link count, device) |
 | `df -h /path` | Lihat filesystem dari path |
 
+## 🔗 16. Inode & Links
+
+| Perintah | Fungsi |
+|---|---|
+| `ls -li file` | Lihat inode number + link count |
+| `ln source target` | Buat hard link |
+| `ln -s source target` | Buat symbolic link |
+| `readlink link` | Lihat path target symlink |
+| `file link` | Identifikasi tipe file |
+| `test -L link` | Cek apakah file adalah symlink |
+| `stat file` | Info lengkap (inode, link count, device) |
+| `df -h /path` | Lihat filesystem dari path |
+
+**Perbedaan Hard Link vs Symbolic Link:**
+
+| Aspek | Hard Link | Symbolic Link |
+|---|---|---|
+| Menunjuk ke | Inode | Path |
+| Inode number | Sama | Berbeda |
+| Lintas filesystem | ❌ | ✅ |
+| Link ke direktori | ❌ | ✅ |
+| Target dihapus | Data tetap ada | Link rusak (dangling) |
+| Tanda di `ls -l` | File biasa | `l` + `->` |
+
 **Aturan:**
 - Hard link → inode sama, hanya bisa dalam filesystem yang sama, tidak bisa ke direktori.
 - Symbolic link → inode berbeda, bisa lintas filesystem.
