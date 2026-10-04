@@ -319,6 +319,31 @@ $ rm -r ~/tmplink/            # ❌ bahaya (hapus isi /tmp!)
 - Symbolic link → inode berbeda, bisa lintas filesystem.
 - Data hilang hanya saat link count = 0.
 
+## 💾 17. Swap & Storage
+
+| Perintah | Fungsi |
+|---|---|
+| `fallocate -l 2G /swapfile` | Buat file swap 2 GB |
+| `dd if=/dev/zero of=/swapfile bs=1M count=2048` | Alternatif buat file |
+| `chmod 600 /swapfile` | Set permission ketat |
+| `mkswap /swapfile` | Format sebagai swap |
+| `swapon /swapfile` | Aktifkan swap |
+| `swapoff /swapfile` | Nonaktifkan swap |
+| `swapon --show` | Daftar swap aktif |
+| `free -h` | Total memori + swap |
+| `cat /proc/swaps` | Swap dari kernel |
+| `blkid /swapfile` | Cek UUID swap |
+
+**Format `/etc/fstab` untuk swap:**
+```
+/swapfile swap swap defaults 0 0
+```
+
+**Ukuran swap yang disarankan:**
+- RAM ≤ 2 GB → 2× RAM
+- RAM 2–8 GB → 1× RAM
+- RAM > 8 GB → 0.5× RAM, min 4 GB
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
