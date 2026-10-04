@@ -344,6 +344,23 @@ $ rm -r ~/tmplink/            # ❌ bahaya (hapus isi /tmp!)
 - RAM 2–8 GB → 1× RAM
 - RAM > 8 GB → 0.5× RAM, min 4 GB
 
+### 📊 Disk Usage (`df` & `du`)
+
+| Perintah | Fungsi |
+|---|---|
+| `df -h` | Penggunaan filesystem (human-readable) |
+| `df -Th` | Penggunaan + tipe filesystem |
+| `df -i` | Penggunaan inode |
+| `du -sh .` | Total ukuran direktori saat ini |
+| `du -h dir/*` | Ukuran tiap file di direktori |
+| `du --max-depth=1` | Ukuran per subdirektori (1 level) |
+| `du -ah \| sort -h \| tail -20` | 20 file/direktori terbesar |
+| `df -h > file.txt` | Simpan output ke file |
+
+**Perbedaan:**
+- `df` → filesystem usage (dari superblock, cepat)
+- `du` → file/directory usage (baca setiap file, lambat)
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
