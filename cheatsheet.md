@@ -361,6 +361,29 @@ $ rm -r ~/tmplink/            # ❌ bahaya (hapus isi /tmp!)
 - `df` → filesystem usage (dari superblock, cepat)
 - `du` → file/directory usage (baca setiap file, lambat)
 
+### 🗂️ Partition Management
+
+| Perintah | Fungsi |
+|---|---|
+| `lsblk` / `lsblk -f` | Lihat disk & partisi (opsional: filesystem) |
+| `sudo parted /dev/sdX` | Tool partisi (GPT/MBR) |
+| `(parted) mklabel gpt` | Buat table GPT |
+| `(parted) mkpart` | Buat partisi |
+| `sudo fdisk /dev/sdX` | Tool partisi interaktif |
+| `(fdisk) n / d / w / q` | New / delete / write / quit |
+| `mkfs -t ext4 -L LABEL /dev/sdX1` | Format + label |
+| `blkid /dev/sdX1` | Lihat label + UUID |
+| `mount LABEL=NAME /mnt/point` | Mount dengan label |
+| `mount -a` | Mount semua dari fstab |
+| `partprobe /dev/sdX` | Reload partition table |
+
+**Format `/etc/fstab`:**
+```
+LABEL=NAMA  /mnt/point  ext4  defaults,nofail  0  2
+```
+- `LABEL=` → identifikasi device yang konsisten
+- `nofail` → sistem tetap boot meski partisi tidak ada
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
