@@ -26,6 +26,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 8.3 | Hard Link & Soft Link (Praktik Gabungan) | ✅ | [Lihat](08-filesystem/lab-8.3-hard-soft-link-practice.md) |
 | 9.1 | Membuat & Mengaktifkan Swap File | ✅ | [Lihat](09-storage/lab-9.1-swap-file.md) |
 | 9.2 | Disk Usage dengan `df` & `du` | ✅ | [Lihat](09-storage/lab-9.2-df-du.md) |
+| 9.3 | Manajemen Partisi Disk (`parted` & `fdisk`) | ✅ | [Lihat](09-storage/lab-9.3-partition-management.md) |
 
 ## 📖 Referensi Cepat
 
