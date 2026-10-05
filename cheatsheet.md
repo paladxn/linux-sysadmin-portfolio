@@ -488,6 +488,55 @@ user    ALL=(root) NOPASSWD:/usr/bin/systemctl restart nginx
 - Permission file di `/etc/sudoers.d/` harus `0440`.
 - Hindari `NOPASSWD:ALL` di production.
 
+## 🔒 20. Restricted User & Access Control
+
+**Langkah membuat restricted user:**
+
+```bash
+# 1. Buat user
+useradd -m -s /bin/bash nusa
+passwd nusa
+
+# 2. Aktifkan restricted shell
+usermod -s /bin/rbash nusa
+
+# 3. Buat direktori command
+mkdir -p /home/nusa/bin
+chown nusa:nusa /home/nusa/bin
+chmod 755 /home/nusa/bin
+
+# 4. Batasi PATH
+echo 'export PATH=$HOME/bin' >> /home/nusa/.bash_profile
+
+# 5. Symlink command yang diizinkan
+ln -s /bin/ls /home/nusa/bin/ls
+ln -s /bin/cat /home/nusa/bin/cat
+ln -s /usr/bin/sudo /home/nusa/bin/sudo
+
+# 6. Buat group & tambahkan user
+groupadd -f limitednusa
+usermod -aG limitednusa nusa
+
+# 7. Sudoers terbatas
+visudo -f /etc/sudoers.d/limitednusa
+# Isi: %limitednusa ALL=(ALL) NOPASSWD: /bin/ls, /bin/cat
+chmod 440 /etc/sudoers.d/limitednusa
+
+# 8. Batasi login SSH
+echo "-:limitednusa:ALL EXCEPT LOCAL" >> /etc/security/access.conf
+```
+
+**Batasan `rbash`:**
+- ❌ `cd` ke direktori lain
+- ❌ Set/modifikasi env var (PATH, SHELL, ENV)
+- ❌ Command dengan `/` di path
+- ❌ Redirect input/output (`>`, `<`, `>>`)
+
+**Catatan:**
+- `rbash` **bukan** security tool — mudah di-bypass.
+- Selalu test dengan `su - user` setelah konfigurasi.
+- File di `/etc/sudoers.d/` harus permission `0440` dan tanpa titik di nama.
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
