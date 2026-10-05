@@ -384,6 +384,35 @@ LABEL=NAMA  /mnt/point  ext4  defaults,nofail  0  2
 - `LABEL=` → identifikasi device yang konsisten
 - `nofail` → sistem tetap boot meski partisi tidak ada
 
+## 🗄️ 18. LVM (Logical Volume Manager)
+
+**Alur:**
+```
+partisi → pvcreate → vgcreate → lvcreate → mkfs → mount → fstab
+```
+
+| Perintah | Fungsi |
+|---|---|
+| `pvcreate /dev/sdb1` | Buat Physical Volume |
+| `vgcreate <vg> /dev/sdb1 /dev/sdb2` | Buat Volume Group |
+| `lvcreate -n <lv> -L 400M <vg>` | Buat Logical Volume |
+| `mkfs -t ext4 /dev/<vg>/<lv>` | Format LV |
+| `pvs` / `pvdisplay` | Info PV (ringkas / detail) |
+| `vgs` / `vgdisplay` | Info VG |
+| `lvs` / `lvdisplay` | Info LV |
+| `vgextend <vg> /dev/sdc1` | Tambah PV ke VG |
+| `lvextend -L +200M /dev/<vg>/<lv>` | Perbesar LV |
+| `resize2fs /dev/<vg>/<lv>` | Resize filesystem ext4 |
+| `lvreduce -L 200M /dev/<vg>/<lv>` | Perkecil LV |
+| `lvremove` / `vgremove` / `pvremove` | Hapus (urutan: LV → VG → PV) |
+| `lvcreate -s -n snap -L 100M /dev/<vg>/<lv>` | Snapshot LV |
+
+**Catatan:**
+- Flag `lvm on` wajib di partisi (via `parted set N lvm on`).
+- `udevadm settle` sebelum `pvcreate` untuk memastikan device siap.
+- `systemctl daemon-reload` setelah edit fstab.
+- Resize: perbesar = `lvextend` → `resize2fs`; perkecil = `resize2fs` → `lvreduce`.
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
