@@ -27,7 +27,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 9.1 | Membuat & Mengaktifkan Swap File | ✅ | [Lihat](09-storage/lab-9.1-swap-file.md) |
 | 9.2 | Disk Usage dengan `df` & `du` | ✅ | [Lihat](09-storage/lab-9.2-df-du.md) |
 | 9.3 | Manajemen Partisi Disk (`parted` & `fdisk`) | ✅ | [Lihat](09-storage/lab-9.3-partition-management.md) |
-| 10.1 | LVM: Physical Volume, Volume Group & Logical Volume | ✅ | [Lihat](10-storage/lab-10.1-lvm-basic.md) |
+| 10.1 | LVM: Physical Volume, Volume Group & Logical Volume | ✅ | [Lihat](10-LVM/lab-10.1-lvm-basic.md) |
 
 ## 📖 Referensi Cepat
 
