@@ -413,6 +413,43 @@ partisi → pvcreate → vgcreate → lvcreate → mkfs → mount → fstab
 - `systemctl daemon-reload` setelah edit fstab.
 - Resize: perbesar = `lvextend` → `resize2fs`; perkecil = `resize2fs` → `lvreduce`.
 
+## 👤 19. User & Group Management
+
+| Perintah | Fungsi |
+|---|---|
+| `useradd <user>` | Buat user |
+| `useradd -m -s /bin/bash <user>` | Buat user + home + shell |
+| `userdel -r <user>` | Hapus user + home |
+| `usermod -c "comment" <user>` | Set comment |
+| `usermod -aG <group> <user>` | Tambah ke supplementary group (**wajib -a**) |
+| `usermod -L` / `-U` | Lock / unlock user |
+| `passwd <user>` | Set password |
+| `passwd -S <user>` | Cek status password |
+| `chage -d 0 <user>` | Force ganti password saat login |
+| `groupadd -g <gid> <group>` | Buat group dengan GID |
+| `id <user>` / `groups <user>` | Info user & group |
+| `su - <user>` | Switch user |
+| `sudo -l -U <user>` | Lihat sudo privilege user |
+| `visudo -c` | Validasi sudoers |
+
+**File penting:**
+- `/etc/passwd` — data user
+- `/etc/shadow` — password
+- `/etc/group` — data group
+- `/etc/sudoers.d/` — sudoers modular
+
+**Format sudoers:**
+```
+%group  ALL=(ALL)  NOPASSWD:ALL
+user    ALL=(root) NOPASSWD:/usr/bin/systemctl restart nginx
+```
+
+**Aturan penting:**
+- Selalu `usermod -aG` (append), jangan `-G`.
+- User harus logout & login ulang setelah diubah group-nya.
+- Permission file di `/etc/sudoers.d/` harus `0440`.
+- Hindari `NOPASSWD:ALL` di production.
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
