@@ -413,6 +413,44 @@ partisi → pvcreate → vgcreate → lvcreate → mkfs → mount → fstab
 - `systemctl daemon-reload` setelah edit fstab.
 - Resize: perbesar = `lvextend` → `resize2fs`; perkecil = `resize2fs` → `lvreduce`.
 
+### 🔐 Password Aging (`chage`)
+
+| Perintah | Fungsi |
+|---|---|
+| `chage -l <user>` | Lihat info aging |
+| `chage -m N -M N <user>` | Min/max hari password |
+| `chage -E YYYY-MM-DD <user>` | Expire akun |
+| `chage -d 0 <user>` | Force ganti password saat login |
+
+### 🔑 SSH (Secure Shell)
+
+| Perintah | Fungsi |
+|---|---|
+| `ssh user@host` | Login remote |
+| `ssh user@host "command"` | Jalankan perintah remote |
+| `scp file user@host:/path` | Copy file |
+| `scp -r dir user@host:/path` | Copy direktori |
+| `ssh-keygen` | Generate key pair |
+| `ssh-copy-id user@host` | Copy public key ke server |
+
+**File SSH:**
+- `~/.ssh/id_rsa` — private key (600)
+- `~/.ssh/id_rsa.pub` — public key (644)
+- `~/.ssh/authorized_keys` — public key yang diizinkan (600)
+- `/etc/ssh/sshd_config` — config SSH server
+
+### 📂 File Penting User/Group
+
+| File | Permission | Isi |
+|---|---|---|
+| `/etc/passwd` | 644 | Data user |
+| `/etc/shadow` | 400 | Hash password |
+| `/etc/group` | 644 | Data group |
+| `/etc/gshadow` | 400 | Password group |
+| `/etc/skel/` | — | Template home user baru |
+
+**Aturan emas:** Jangan pernah edit file-file di atas secara langsung — gunakan tools resmi (`useradd`, `usermod`, `chage`, dll).
+
 ## 👤 19. User & Group Management
 
 | Perintah | Fungsi |
