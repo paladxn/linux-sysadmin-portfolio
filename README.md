@@ -12,7 +12,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | Lab | Topik | Status | Link |
 |-----|-------|--------|------|
 | 3.1 | File & Directory Operations | ✅ | [Lihat](03-file-directory/lab-3.1-file-directory.md) |
-| 3.2 | Nano & Vim Text Editor | ✅ | [Lihat](03-file-directory/ab-3.2-nano-vim.md) |
+| 3.2 | Nano & Vim Text Editor | ✅ | [Lihat](03-file-directory/lab-3.2-nano-vim.md) |
 | 3.3 | Pipe, Wildcard & Redirection | ✅ | [Lihat](03-file-directory/lab-3.3-pipe-wildcard-redirection.md) |
 | 3.4 | `ls` Command & Pipe Combination | ✅ | [Lihat](03-file-directory/lab-3.4-ls-command.md) |
 | 4.1 | Resource Limits dengan `ulimit` | ✅ | [Lihat](04-user-resource/lab-4.1-ulimit.md) |
@@ -27,9 +27,9 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 9.1 | Membuat & Mengaktifkan Swap File | ✅ | [Lihat](09-storage/lab-9.1-swap-file.md) |
 | 9.2 | Disk Usage dengan `df` & `du` | ✅ | [Lihat](09-storage/lab-9.2-df-du.md) |
 | 9.3 | Manajemen Partisi Disk (`parted` & `fdisk`) | ✅ | [Lihat](09-storage/lab-9.3-partition-management.md) |
-| 10.1 | LVM: Physical Volume, Volume Group & Logical Volume | ✅ | [Lihat](10-LVM/lab-10.1-lvm-basic.md) |
-| 11.1 | Kernel Overview, Boot Parameters & Rescue Mode | ✅ | [Lihat](11-kernel-boot/11.1-kernel-overview-rescue-mode.md) |
-| 12 | User Accounts, Groups & SSH (Teori) | ✅ | [Lihat](12-user-group/lab-12-user-accounts-groups-ssh-theory.md) |
+| 10.1 | LVM: Physical Volume, Volume Group & Logical Volume | ✅ | [Lihat](10-lvm/lab-10.1-lvm-basic.md) |
+| 11.1 | Kernel Overview, Boot Parameters & Rescue Mode | ✅ | [Lihat](11-kernel-boot/lab-11.1-kernel-overview-rescue-mode.md) |
+| 12.0 | User Accounts, Groups & SSH (Teori) | ✅ | [Lihat](12-user-group/lab-12.0-user-accounts-groups-ssh-theory.md) |
 | 12.1 | Manajemen User & Group | ✅ | [Lihat](12-user-group/lab-12.1-user-group-management.md) |
 | 12.2 | Membuat Restricted User | ✅ | [Lihat](12-user-group/lab-12.2-restricted-user.md) |
 | 12.3 | Manajemen Password Expiration Policy | ✅ | [Lihat](12-user-group/lab-12.3-password-expiration-policy.md) |
