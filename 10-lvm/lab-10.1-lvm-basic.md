@@ -1,4 +1,4 @@
-# Lab 9.4 — LVM: Physical Volume, Volume Group & Logical Volume
+# Lab 10.1 — LVM: Physical Volume, Volume Group & Logical Volume
 
 **Course:** Linux System Administration (Adinusa)
 **Topic:** Dasar LVM (PV, VG, LV) + persistent mount
