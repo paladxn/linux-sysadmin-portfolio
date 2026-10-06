@@ -32,7 +32,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 12 | User Accounts, Groups & SSH (Teori) | ✅ | [Lihat](12-user-group/lab-12-user-accounts-groups-ssh-theory.md) |
 | 12.1 | Manajemen User & Group | ✅ | [Lihat](12-user-group/lab-12.1-user-group-management.md) |
 | 12.2 | Membuat Restricted User | ✅ | [Lihat](12-user-group/lab-12.2-restricted-user.md) |
-| 12.3 | Manajemen Password Expiration Policy | ✅ | [Lihat](12-user-group-ssh/lab-12.3-password-expiration-policy.md) |
+| 12.3 | Manajemen Password Expiration Policy | ✅ | [Lihat](12-user-group/lab-12.3-password-expiration-policy.md) |
 
 ## 📖 Referensi Cepat
 
