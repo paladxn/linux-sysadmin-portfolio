@@ -4,16 +4,63 @@
 Kumpulan perintah dari Lab 3.1 – 12.5 (kursus Adinusa) + pengalaman praktik.
 
 > 📖 **Cara pakai cheatsheet ini:**
-> - Bagian **1–6** = fondasi. Wajib dikuasai dulu.
-> - Bagian **7–10** = manipulasi data & sistem. Dipakai sehari-hari.
-> - Bagian **11–15** = storage & network. Untuk server.
-> - Bagian **16–20** = user & security. Untuk produksi.
-> - Bagian **21** = referensi cepat (opsi, file penting).
+> - Bagian **1–2** = fondasi. Wajib dikuasai dulu.
+> - Bagian **3–4** = sistem & storage. Dipakai sehari-hari.
+> - Bagian **5** = user & security. Untuk produksi.
+> - Bagian **6** = referensi cepat.
 
 > ⚠️ **Penanda bahaya:**
 > - ✅ = aman
 > - ⚠️ = hati-hati (bisa mengubah data)
 > - 🚨 = berbahaya (bisa menghapus sistem / mengunci akses)
+
+---
+
+## 📑 Daftar Isi
+
+**Bagian 1 — Fondasi**
+- [1.1 Navigasi Direktori](#11-navigasi-direktori)
+- [1.2 Manajemen File & Direktori](#12-manajemen-file--direktori)
+- [1.3 Melihat Isi File & Direktori](#13-melihat-isi-file--direktori)
+- [1.4 Membuat & Menulis File](#14-membuat--menulis-file)
+- [1.5 Nano — Editor Ramah Pemula](#15-nano--editor-ramah-pemula)
+- [1.6 Vim — Editor Powerful](#16-vim--editor-powerful)
+
+**Bagian 2 — Manipulasi Data**
+- [2.1 Pipe, Filter & Hitung](#21-pipe-filter--hitung)
+- [2.2 Opsi Penting yang Wajib Dihafal](#22-opsi-penting-yang-wajib-dihafal)
+- [2.3 Kombinasi Pola yang Sering Dipakai](#23-kombinasi-pola-yang-sering-dipakai)
+
+**Bagian 3 — Sistem & Proses**
+- [3.1 Resource Limits (`ulimit`)](#31-resource-limits-ulimit)
+- [3.2 Process Management](#32-process-management)
+- [3.3 Monitoring CPU & Load](#33-monitoring-cpu--load)
+
+**Bagian 4 — Package & Storage**
+- [4.1 Package Management (APT)](#41-package-management-apt)
+- [4.2 External Repository & Version Pinning](#42-external-repository--version-pinning)
+- [4.3 Swap File](#43-swap-file)
+- [4.4 Disk Usage (`df` & `du`)](#44-disk-usage-df--du)
+- [4.5 Partition Management](#45-partition-management)
+- [4.6 LVM (Logical Volume Manager)](#46-lvm-logical-volume-manager)
+
+**Bagian 5 — User & Security**
+- [5.1 Inode & Links](#51-inode--links)
+- [5.2 User & Group Management](#52-user--group-management)
+- [5.3 Password Aging (`chage`)](#53-password-aging-chage)
+- [5.4 Restricted User & Access Control](#54-restricted-user--access-control)
+- [5.5 SSH & SSH Key Authentication](#55-ssh--ssh-key-authentication)
+- [5.6 Kernel & Boot](#56-kernel--boot)
+
+**Bagian 6 — Referensi Cepat**
+- [6.1 Perbedaan Penting](#61-perbedaan-penting)
+- [6.2 Danger Zone — Perintah Berbahaya](#62-danger-zone--perintah-berbahaya)
+- [6.3 Alur Troubleshooting Umum](#63-alur-troubleshooting-umum)
+- [6.4 Best Practice untuk Pemula](#64-best-practice-untuk-pemula)
+- [📖 Glosarium](#-glosarium)
+- [🚀 Kalau Baru Mulai](#-kalau-baru-mulai)
+- [⚠️ Command yang Sering Typo](#️-command-yang-sering-typo)
+- [🆘 Kalau Panic](#-kalau-panic)
 
 ---
 
@@ -49,11 +96,11 @@ $ pwd
 | `mkdir -p a/b/c` | Buat direktori + parent sekaligus | ✅ hemat waktu |
 | `touch file.txt` | Buat file kosong | Juga update timestamp |
 | `rm file.txt` | Hapus file | ⚠️ langsung hapus |
-| `rmdir folder` | Hapus direktori **kosong** | ✅ aman, cuma jalan kalau kosong |
+| `rmdir folder` | Hapus direktori **kosong** | ✅ aman |
 | `rm -r folder` | Hapus direktori + isinya | 🚨 tidak ada undo |
 | `rm -ri folder` | Hapus dengan konfirmasi | ✅ **selalu pakai ini** |
 
-> 💡 **Tips senior:** Biasakan `rm -ri` daripada `rm -r`. Konfirmasi per file memang menyebalkan, tapi menyelamatkan dari bencana. Saya pernah lihat orang `rm -rf /` karena typo — sistemnya hilang dalam 3 detik.
+> 💡 **Tips senior:** Biasakan `rm -ri` daripada `rm -r`. Konfirmasi per file memang menyebalkan, tapi menyelamatkan dari bencana.
 
 ---
 
@@ -70,7 +117,7 @@ $ pwd
 | `less file` | Tampilkan per halaman | File panjang (log) |
 | `ls --help` | Bantuan | Selalu cek kalau ragu |
 
-> 💡 **Tips:** Kuasai `ls -lah` — ini perintah yang paling sering dipakai sysadmin. Menampilkan hampir semua yang perlu diketahui tentang file.
+> 💡 **Tips:** Kuasai `ls -lah` — ini perintah yang paling sering dipakai sysadmin.
 
 ---
 
@@ -273,7 +320,7 @@ $ ulimit -u     # max processes
 | `SIGHUP` | 1 | Reload konfigurasi |
 | `SIGINT` | 2 | Interrupt (`CTRL + C`) |
 
-> 💡 **Tips:** Selalu coba `kill PID` dulu. Baru `kill -9` kalau proses tidak merespons. `SIGKILL` tidak memberi kesempatan proses menutup file dengan benar.
+> 💡 **Tips:** Selalu coba `kill PID` dulu. Baru `kill -9` kalau proses tidak merespons.
 
 **Trik hindari baris `grep` muncul di output:**
 
@@ -331,7 +378,7 @@ $ pgrep -af killing           # atau pakai pgrep
 | `sudo apt purge <paket>` | Hapus + config |
 | `sudo apt autoremove` | Bersihkan dependensi tak terpakai |
 
-> ⚠️ **Bedakan `remove` dan `purge`:** `remove` menyisakan config (berguna kalau mau install lagi nanti). `purge` menghapus semua jejak.
+> ⚠️ **Bedakan `remove` dan `purge`:** `remove` menyisakan config. `purge` menghapus semua jejak.
 
 ---
 
@@ -731,6 +778,8 @@ echo "-:limited<username>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 | `usermod -G` vs `-aG` | `-G` overwrite, `-aG` append |
 | Hard link vs symlink | Hard = inode sama, symlink = path |
 
+---
+
 ## 6.2 Danger Zone — Perintah Berbahaya
 
 | Perintah | Bahaya |
@@ -744,6 +793,8 @@ echo "-:limited<username>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 | 🚨 `chmod -R 777 /` | Rusak permission sistem |
 | 🚨 `dd if=/dev/zero of=/dev/sda` | Wipe disk |
 
+---
+
 ## 6.3 Alur Troubleshooting Umum
 
 | Masalah | Langkah Awal |
@@ -755,6 +806,8 @@ echo "-:limited<username>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 | SSH tidak bisa login | Cek permission `~/.ssh`, `authorized_keys`, `PermitRootLogin` |
 | Load average tinggi | `top` → cek proses, bandingkan dengan `nproc` |
 | File hilang | Cek hard link dengan `ls -li`, atau cek backup |
+
+---
 
 ## 6.4 Best Practice untuk Pemula
 
@@ -768,6 +821,114 @@ echo "-:limited<username>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 8. **Catat** apa yang kamu lakukan — untuk dirimu sendiri nanti.
 9. **Test di VM** sebelum produksi.
 10. **Konsisten** dengan konvensi — jangan bikin standar sendiri.
+
+---
+
+## 📖 Glosarium
+
+| Istilah | Arti Singkat |
+|---|---|
+| **APT** | Advanced Package Tool — package manager Debian/Ubuntu |
+| **Bash** | Bourne Again Shell — shell default di banyak Linux |
+| **chroot** | Mengubah root directory untuk isolasi |
+| **Cron** | Scheduler untuk menjalankan tugas berkala |
+| **Daemon** | Proses yang berjalan di background |
+| **df** | Disk Free — lihat penggunaan filesystem |
+| **du** | Disk Usage — lihat ukuran file/direktori |
+| **ext4** | Filesystem default di banyak distro Linux |
+| **fstab** | File System Table — konfigurasi mount otomatis |
+| **GECOS** | Field comment di `/etc/passwd` (nama lengkap, dll) |
+| **GID** | Group ID — nomor unik untuk group |
+| **GRUB** | Bootloader yang umum dipakai Linux |
+| **Hard link** | Nama tambahan yang menunjuk inode yang sama |
+| **Inode** | "KTP" file — metadata, bukan nama |
+| **Kernel** | Inti sistem operasi yang mengelola hardware |
+| **Load average** | Panjang antrean proses yang menunggu CPU |
+| **LVM** | Logical Volume Manager — partisi virtual |
+| **MBR** | Master Boot Record — skema partisi lama |
+| **GPT** | GUID Partition Table — skema partisi modern |
+| **OOM** | Out of Memory — sistem kehabisan RAM |
+| **PAM** | Pluggable Authentication Modules |
+| **Parted** | Tool untuk partisi disk (GPT/MBR) |
+| **Pipe** | `\|` — menghubungkan output ke input |
+| **PV** | Physical Volume (LVM) |
+| **VG** | Volume Group (LVM) |
+| **LV** | Logical Volume (LVM) |
+| **rbash** | Restricted bash — shell terbatas |
+| **Root** | Superuser dengan akses tak terbatas |
+| **SELinux** | Security-Enhanced Linux — MAC |
+| **AppArmor** | Alternatif SELinux, lebih mudah |
+| **SIGTERM** | Sinyal 15 — berhenti sopan |
+| **SIGKILL** | Sinyal 9 — paksa berhenti |
+| **SSH** | Secure Shell — akses remote aman |
+| **sudo** | Superuser Do — jalankan sebagai root |
+| **Swap** | Memori cadangan di disk |
+| **Symlink** | "Shortcut" ke file/folder lain |
+| **Systemd** | Init system modern di banyak distro |
+| **UID** | User ID — nomor unik untuk user |
+| **ulimit** | User limit — batas resource |
+| **Vim** | Vi IMproved — editor powerful |
+| **Zombie** | Proses yang sudah selesai tapi belum di-reap parent-nya |
+
+---
+
+## 🚀 Kalau Baru Mulai
+
+**Urutan belajar yang disarankan:**
+
+1. **Bagian 1** — kuasai navigasi & file. Ini fondasi.
+2. **Bagian 2** — praktik pipe & filter di terminal. Ini inti Linux.
+3. **Bagian 3** — pelajari proses & resource saat sudah nyaman.
+4. **Bagian 4** — storage & package untuk server.
+5. **Bagian 5** — security & user management untuk produksi.
+6. **Bagian 6** — referensi cepat saat lupa.
+
+**Tips belajar:**
+- Praktik langsung di terminal — jangan cuma baca.
+- Bikin VM sendiri (VirtualBox/VMware) untuk eksperimen bebas.
+- Ulangi perintah sampai hafal tanpa lihat cheatsheet.
+- Fokus ke **satu topik per minggu** — jangan loncat-loncat.
+
+---
+
+## ⚠️ Command yang Sering Typo
+
+Berdasarkan pengalaman pribadi dan teman-teman:
+
+| Typo Umum | Seharusnya |
+|---|---|
+| `chage -l user>` (ada `>`) | `chage -l user` |
+| `du_each.tx` | `du_each.txt` |
+| `usermod -G` (tanpa `-a`) | `usermod -aG` |
+| `df_all.txt>` | `df_all.txt` |
+| `wm` (bukan `rm`) | `rm` |
+| `ifconfig` (deprecated) | `ip a` |
+| `apt-get install` tanpa `sudo` | `sudo apt install` |
+| `rm -rf /` (ada spasi) | `rm -rf /path` |
+| `chmod 777` (semua file) | `chmod 644` atau `755` |
+
+> 💡 **Tips:** Kalau muncul prompt `>`, berarti bash menunggu input tambahan. Tekan **CTRL + C** untuk membatalkan. Biasanya karena ada tanda kutip atau `>` yang belum ditutup.
+
+---
+
+## 🆘 Kalau Panic
+
+**Situasi darurat dan langkah pertamanya:**
+
+| Situasi | Langkah Pertama |
+|---|---|
+| Sistem tidak boot | Masuk rescue mode dari GRUB |
+| Lupa password root | Rescue mode → `passwd` |
+| Disk penuh total | `df -h` → `du -sh /* \| sort -h` → hapus file besar |
+| Fork error | `ulimit -u` — cek limit, kurangi proses |
+| SSH tidak bisa login | Cek `~/.ssh` permission, `sshd_config` |
+| Command hang | `CTRL + C` (interrupt) |
+| Vim stuck | `Esc` → `:q!` (keluar tanpa save) |
+| Nano stuck | `CTRL + X` → `N` (discard) |
+| Terminal kacau | `reset` atau `stty sane` |
+| Lupa perintah | `man <perintah>` atau `--help` |
+
+> 💡 **Tips:** Kalau benar-benar panik dan tidak tahu harus apa — **jangan ketik apapun dulu**. Tarik napas, baca pesan error, baru cari solusi. Panik biasanya bikin kesalahan makin parah.
 
 ---
 
