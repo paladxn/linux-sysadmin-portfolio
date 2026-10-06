@@ -537,6 +537,25 @@ echo "-:limitednusa:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 - Selalu test dengan `su - user` setelah konfigurasi.
 - File di `/etc/sudoers.d/` harus permission `0440` dan tanpa titik di nama.
 
+### ⏳ Password Aging (`chage`)
+
+| Perintah | Fungsi |
+|---|---|
+| `chage -l user` | Lihat info aging |
+| `chage -M 30 -m 7 -W 5 user` | Set max/min/warning days |
+| `chage -d 0 user` | Paksa ganti password saat login |
+| `chage -E YYYY-MM-DD user` | Set account expiration |
+| `chage -I N user` | Set inactive days setelah expired |
+
+**Default policy system-wide:**
+- Edit `/etc/login.defs`:
+  ```
+  PASS_MAX_DAYS   90
+  PASS_MIN_DAYS   1
+  PASS_WARN_AGE   7
+  ```
+- Hanya berlaku untuk user baru.
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
