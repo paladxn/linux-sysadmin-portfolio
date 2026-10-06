@@ -556,6 +556,24 @@ echo "-:limitednusa:ALL EXCEPT LOCAL" >> /etc/security/access.conf
   ```
 - Hanya berlaku untuk user baru.
 
+  ### 🔑 SSH Key Authentication
+
+| Perintah | Fungsi |
+|---|---|
+| `ssh-keygen -t rsa -b 4096 -N ""` | Generate key pair tanpa passphrase |
+| `ssh-copy-id -i ~/.ssh/id_rsa.pub -p PORT user@host` | Salin public key ke server |
+| `ssh -p PORT user@host "command"` | Jalankan perintah remote |
+| `ssh -i ~/.ssh/id_rsa -p PORT user@host` | Gunakan key spesifik |
+| `ssh -o BatchMode=yes ...` | Verifikasi passwordless |
+| `ssh-keyscan -p PORT host >> ~/.ssh/known_hosts` | Ambil host key |
+| `ssh-keygen -R "[host]:PORT"` | Hapus host key lama |
+
+**Permission file SSH:**
+- `~/.ssh` → `700`
+- `~/.ssh/id_rsa` → `600`
+- `~/.ssh/id_rsa.pub` → `644`
+- `~/.ssh/authorized_keys` → `600`
+
 ## 📌 Disclaimer
 
 > ⚠️ Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
