@@ -53,12 +53,13 @@ Kumpulan perintah dari Lab 3.1 – 13.1 (kursus Adinusa) + pengalaman praktik.
 - [5.4 Restricted User & Access Control](#54-restricted-user--access-control)
 - [5.5 SSH & SSH Key Authentication](#55-ssh--ssh-key-authentication)
 - [5.6 Kernel & Boot](#56-kernel--boot)
-
+  
 **Bagian 6 — File Permissions**
 - [6.1 chmod — Symbolic Mode](#61-chmod--symbolic-mode)
 - [6.2 chmod — Numeric Mode (Octal)](#62-chmod--numeric-mode-octal)
 - [6.3 chown & chgrp](#63-chown--chgrp-belum)
 - [6.4 Special Permissions (SUID, SGID, Sticky)](#64-special-permissions-belum)
+- [6.5 ACL (Access Control List)](#65-acl-access-control-list)
 
 **Bagian 7 — Referensi Cepat**
 - [7.1 Perbedaan Penting](#71-perbedaan-penting)
@@ -910,6 +911,52 @@ $ chmod 700 scripts/     # direktori private
 
 ---
 
+## 6.5 ACL (Access Control List)
+
+**Konsep:** Permission tambahan di luar user/group/others. Berguna untuk memberi akses ke **user spesifik** tanpa mengubah owner atau group.
+
+**Tanda file punya ACL:** `+` di output `ls -l`
+
+```
+-rw-rw----+ 1 user1 user1 29 ... file.txt
+          ↑
+       ada ACL
+```
+
+| Perintah | Fungsi |
+|---|---|
+| `sudo apt install acl -y` | Install paket ACL |
+| `setfacl -m u:user:r file` | Tambah ACL user (read) |
+| `setfacl -m u:user:rw file` | Tambah ACL user (read+write) |
+| `setfacl -m u:user:r-x file` | Tambah ACL user (read+execute) |
+| `setfacl -m g:group:r file` | Tambah ACL group |
+| `setfacl -x u:user file` | Hapus ACL user tertentu |
+| `setfacl -b file` | Hapus semua ACL |
+| `setfacl -d -m u:user:r dir/` | Set default ACL di direktori |
+| `setfacl -R -m u:user:r dir/` | Set ACL rekursif |
+| `getfacl file` | Lihat ACL |
+| `getfacl -R dir/` | Lihat ACL rekursif |
+
+**Struktur ACL:**
+
+```
+user::rw-          ← owner
+user:user2:r--     ← ACL user
+group::rw-         ← group owner
+mask::rw-          ← batas maksimum ACL
+other::---         ← others
+```
+
+**Tips:**
+
+- `mask` membatasi permission efektif — kalau ACL tidak bekerja, cek mask.
+- `chmod o=` untuk membuat file "private" dari others.
+- `-d` untuk default ACL (file baru di direktori mewarisi).
+- `-R` untuk rekursif.
+- ACL bukan pengganti SELinux/AppArmor untuk keamanan sejati.
+
+---
+
 # BAGIAN 7 — REFERENSI CEPAT
 
 ## 7.1 Perbedaan Penting
@@ -1027,6 +1074,10 @@ $ chmod 700 scripts/     # direktori private
 | **Umask** | Default permission untuk file/direktori baru |
 | **Vim** | Vi IMproved — editor powerful |
 | **Zombie** | Proses yang sudah selesai tapi belum di-reap parent-nya |
+| **ACL** | Access Control List — permission granular per user/group |
+| **setfacl** | Set file ACL — perintah untuk modifikasi ACL |
+| **getfacl** | Get file ACL — perintah untuk melihat ACL |
+| **Mask (ACL)** | Batas maksimum permission efektif ACL |
 
 ---
 
@@ -1149,6 +1200,7 @@ output
 | 2026-10-XX | Perbaiki encoding, tambah template maintenance |
 | 2026-10-XX | Tambah Bagian 5 — User & Security |
 | 2026-10-XX | Tambah Bagian 6.2 — Chmod Octal (Lab 13.2) |
+| 2026-10-XX | Tambah Bagian 6.5 — ACL (Lab 13.3) |
 | ... | ... |
 
 ---
@@ -1180,3 +1232,4 @@ output
 - **Bagian 5.6:** Lab 11.1 (Kernel & Boot)
 - **Bagian 6.1:** Lab 13.1 (Chmod Symbolic)
 - **Bagian 6.2:** Lab 13.2 (Chmod Octal)
+- **Bagian 6.3:** Lab 13.3 (ACL)
