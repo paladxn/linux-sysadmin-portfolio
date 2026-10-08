@@ -54,9 +54,9 @@ Kumpulan perintah dari Lab 3.1 – 13.1 (kursus Adinusa) + pengalaman praktik.
 - [5.5 SSH & SSH Key Authentication](#55-ssh--ssh-key-authentication)
 - [5.6 Kernel & Boot](#56-kernel--boot)
 
-**Bagian 6 — File Permissions (BARU)**
+**Bagian 6 — File Permissions**
 - [6.1 chmod — Symbolic Mode](#61-chmod--symbolic-mode)
-- [6.2 chmod — Numeric Mode](#62-chmod--numeric-mode-belum)
+- [6.2 chmod — Numeric Mode (Octal)](#62-chmod--numeric-mode-octal)
 - [6.3 chown & chgrp](#63-chown--chgrp-belum)
 - [6.4 Special Permissions (SUID, SGID, Sticky)](#64-special-permissions-belum)
 
@@ -846,11 +846,51 @@ $ chmod a+x file.txt
 
 ---
 
-## 6.2 chmod — Numeric Mode (Belum)
+## 6.2 chmod — Numeric Mode (Octal)
 
-> **Status:** Belum dipelajari.
-> **Akan dipelajari di:** Lab 13.2 (kemungkinan).
-> **Rencana isi:** Konversi permission ke angka (4=read, 2=write, 1=execute), cara pakai `chmod 755`, `chmod 644`, dll.
+**Konversi permission ke angka:**
+
+| Permission | Simbol | Angka |
+|---|---|---|
+| Read | `r` | 4 |
+| Write | `w` | 2 |
+| Execute | `x` | 1 |
+
+**Kombinasi umum:**
+
+| Angka | Permission | Kapan dipakai |
+|---|---|---|
+| `644` | `rw-r--r--` | File data, config |
+| `755` | `rwxr-xr-x` | Script, direktori publik |
+| `600` | `rw-------` | File sensitif |
+| `700` | `rwx------` | Direktori private |
+| `640` | `rw-r-----` | File group-shared |
+| `750` | `rwxr-x---` | Direktori group-shared |
+
+**Format:**
+
+```
+chmod  7  5  5  file
+       │  │  └── others
+       │  └───── group
+       └──────── user
+```
+
+**Contoh:**
+
+```bash
+$ chmod 600 file1.txt    # hanya owner
+$ chmod 644 file2.txt    # semua baca, owner tulis
+$ chmod 755 file3.txt    # semua jalankan
+$ chmod 700 scripts/     # direktori private
+```
+
+**Tips:**
+
+- Selalu tulis **3 digit** (`644`, bukan `64`).
+- **Jangan pakai `777`** di production — celah keamanan.
+- Untuk direktori, pastikan `x` ada agar bisa `cd`.
+- Digit ke-4 = special permission (SUID, SGID, sticky bit) — akan dipelajari nanti.
 
 ---
 
@@ -1108,6 +1148,7 @@ output
 | 2026-10-XX | Tambah Bagian 6 — File Permissions (Lab 13.1) |
 | 2026-10-XX | Perbaiki encoding, tambah template maintenance |
 | 2026-10-XX | Tambah Bagian 5 — User & Security |
+| 2026-10-XX | Tambah Bagian 6.2 — Chmod Octal (Lab 13.2) |
 | ... | ... |
 
 ---
@@ -1138,3 +1179,4 @@ output
 - **Bagian 5.5:** Lab 12.4 (SSH Key Auth)
 - **Bagian 5.6:** Lab 11.1 (Kernel & Boot)
 - **Bagian 6.1:** Lab 13.1 (Chmod Symbolic)
+- **Bagian 6.2:** Lab 13.2 (Chmod Octal)
