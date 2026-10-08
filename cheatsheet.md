@@ -1,78 +1,86 @@
 # Linux SysAdmin Cheatsheet
 
-**Referensi cepat untuk belajar Linux System Administration**
-Kumpulan perintah dari Lab 3.1 – 13.1 (kursus Adinusa) + pengalaman praktik.
+**Catatan belajar Linux System Administration**
+Dari kursus Adinusa (Lab 3.x – 13.x) + praktik pribadi.
 
-> **Cara pakai cheatsheet ini:**
-> - Bagian **1–2** = fondasi. Wajib dikuasai dulu.
-> - Bagian **3–4** = sistem & storage. Dipakai sehari-hari.
-> - Bagian **5–6** = user, security & permissions. Untuk produksi.
-> - Bagian **7** = referensi cepat & template update.
+> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security. Bagian 7 = referensi cepat.
 
-> **Penanda bahaya:**
-> - [OK] = aman
-> - [!] = hati-hati (bisa mengubah data)
-> - [X] = berbahaya (bisa menghapus sistem / mengunci akses)
+> **Penanda:** `[OK]` aman · `[!]` hati-hati · `[X]` bahaya
 
-> **Catatan encoding:** Simpan file ini sebagai **UTF-8** agar emoji dan karakter khusus (—, →, ✓) tampil dengan benar.
+> **Encoding file:** UTF-8
+
+---
+
+## Progress Belajar
+
+| Area | Lab | Status |
+|---|---|---|
+| Fondasi (file, editor, pipe) | 3.1 – 3.4 | Selesai |
+| Resource & Process | 4.1 – 4.2, 5.1, 7.1 | Selesai |
+| Package & Storage | 6.1 – 6.2, 9.1 – 9.3, 10.1 | Selesai |
+| Filesystem & Links | 8.1 – 8.3 | Selesai |
+| User & Security | 11.1, 12.0 – 12.5 | Selesai |
+| Permissions | 13.0 – 13.3 | Selesai |
+| — | 13.4+ | Belum |
+
+**Terakhir update:** 2026-10-XX (Lab 13.3 ACL)
 
 ---
 
 ## Daftar Isi
 
-**Bagian 1 — Fondasi**
+**Fondasi**
 - [1.1 Navigasi Direktori](#11-navigasi-direktori)
 - [1.2 Manajemen File & Direktori](#12-manajemen-file--direktori)
-- [1.3 Melihat Isi File & Direktori](#13-melihat-isi-file--direktori)
+- [1.3 Melihat Isi File](#13-melihat-isi-file)
 - [1.4 Membuat & Menulis File](#14-membuat--menulis-file)
-- [1.5 Nano — Editor Ramah Pemula](#15-nano--editor-ramah-pemula)
-- [1.6 Vim — Editor Powerful](#16-vim--editor-powerful)
+- [1.5 Nano](#15-nano--editor-ramah-pemula)
+- [1.6 Vim](#16-vim--editor-powerful)
 
-**Bagian 2 — Manipulasi Data**
+**Data & Teks**
 - [2.1 Pipe, Filter & Hitung](#21-pipe-filter--hitung)
-- [2.2 Opsi Penting yang Wajib Dihafal](#22-opsi-penting-yang-wajib-dihafal)
-- [2.3 Kombinasi Pola yang Sering Dipakai](#23-kombinasi-pola-yang-sering-dipakai)
+- [2.2 Opsi Penting](#22-opsi-penting-yang-wajib-dihafal)
+- [2.3 Kombinasi Pola Umum](#23-kombinasi-pola-yang-sering-dipakai)
 
-**Bagian 3 — Sistem & Proses**
-- [3.1 Resource Limits (ulimit)](#31-resource-limits-ulimit)
+**Sistem & Proses**
+- [3.1 Resource Limits](#31-resource-limits-ulimit)
 - [3.2 Process Management](#32-process-management)
 - [3.3 Monitoring CPU & Load](#33-monitoring-cpu--load)
 
-**Bagian 4 — Package & Storage**
-- [4.1 Package Management (APT)](#41-package-management-apt)
-- [4.2 External Repository & Version Pinning](#42-external-repository--version-pinning)
+**Package & Storage**
+- [4.1 APT](#41-package-management-apt)
+- [4.2 External Repository](#42-external-repository--version-pinning)
 - [4.3 Swap File](#43-swap-file)
-- [4.4 Disk Usage (df & du)](#44-disk-usage-df--du)
-- [4.5 Partition Management](#45-partition-management)
-- [4.6 LVM (Logical Volume Manager)](#46-lvm-logical-volume-manager)
+- [4.4 df & du](#44-disk-usage-df--du)
+- [4.5 Partition](#45-partition-management)
+- [4.6 LVM](#46-lvm-logical-volume-manager)
 
-**Bagian 5 — User & Security**
+**User & Security**
 - [5.1 Inode & Links](#51-inode--links)
-- [5.2 User & Group Management](#52-user--group-management)
-- [5.3 Password Aging (chage)](#53-password-aging-chage)
-- [5.4 Restricted User & Access Control](#54-restricted-user--access-control)
-- [5.5 SSH & SSH Key Authentication](#55-ssh--ssh-key-authentication)
+- [5.2 User & Group](#52-user--group-management)
+- [5.3 Password Aging](#53-password-aging-chage)
+- [5.4 Restricted User](#54-restricted-user--access-control)
+- [5.5 SSH](#55-ssh--ssh-key-authentication)
 - [5.6 Kernel & Boot](#56-kernel--boot)
-  
-**Bagian 6 — File Permissions**
-- [6.1 chmod — Symbolic Mode](#61-chmod--symbolic-mode)
-- [6.2 chmod — Numeric Mode (Octal)](#62-chmod--numeric-mode-octal)
-- [6.3 chown & chgrp](#63-chown--chgrp-belum)
-- [6.4 Special Permissions (SUID, SGID, Sticky)](#64-special-permissions-belum)
-- [6.5 ACL (Access Control List)](#65-acl-access-control-list)
 
-**Bagian 7 — Referensi Cepat**
+**Permissions**
+- [6.1 chmod Symbolic](#61-chmod--symbolic-mode)
+- [6.2 chmod Octal](#62-chmod--numeric-mode-octal)
+- [6.3 ACL](#63-acl-access-control-list)
+- [6.4 chown & chgrp](#64-chown--chgrp) *(planned)*
+- [6.5 Special Permissions](#65-special-permissions-suid-sgid-sticky) *(planned)*
+
+**Referensi Cepat**
 - [7.1 Perbedaan Penting](#71-perbedaan-penting)
-- [7.2 Danger Zone — Perintah Berbahaya](#72-danger-zone--perintah-berbahaya)
-- [7.3 Alur Troubleshooting Umum](#73-alur-troubleshooting-umum)
-- [7.4 Best Practice untuk Pemula](#74-best-practice-untuk-pemula)
+- [7.2 Danger Zone](#72-danger-zone--perintah-berbahaya)
+- [7.3 Troubleshooting](#73-alur-troubleshooting-umum)
+- [7.4 Best Practice](#74-best-practice)
 - [7.5 Glosarium](#75-glosarium)
-- [7.6 Kalau Baru Mulai](#76-kalau-baru-mulai)
-- [7.7 Command yang Sering Typo](#77-command-yang-sering-typo)
-- [7.8 Kalau Panic](#78-kalau-panic)
+- [7.6 Kalau Panic](#76-kalau-panic)
 
-**Panduan Maintenance**
-- [Template Menambah Section Baru](#template-menambah-section-baru)
+**Panduan Update**
+- [8.1 Cara Nambah Section](#81-cara-nambah-section)
+- [8.2 Changelog](#82-changelog)
 
 ---
 
@@ -80,21 +88,18 @@ Kumpulan perintah dari Lab 3.1 – 13.1 (kursus Adinusa) + pengalaman praktik.
 
 ## 1.1 Navigasi Direktori
 
-**Kapan dipakai:** Setiap saat. Ini GPS-nya Linux.
-
-| Perintah | Fungsi | Analogi |
-|---|---|---|
-| `pwd` | Tampilkan posisi saat ini | "Saya di mana?" |
-| `cd folder` | Masuk ke folder | "Jalan ke folder" |
-| `cd ..` | Naik satu level | "Kembali ke parent" |
-| `cd ~` | Ke home directory | "Pulang ke rumah" |
-| `cd -` | Ke direktori sebelumnya | "Balik ke tempat tadi" |
+| Perintah | Fungsi |
+|---|---|
+| `pwd` | Posisi saat ini |
+| `cd folder` | Masuk folder |
+| `cd ..` | Naik satu level |
+| `cd ~` | Ke home |
+| `cd -` | Ke direktori sebelumnya |
 
 ```bash
 $ pwd
 /home/student
-$ cd lab5
-$ pwd
+$ cd lab5 && pwd
 /home/student/lab5
 ```
 
@@ -102,34 +107,33 @@ $ pwd
 
 ## 1.2 Manajemen File & Direktori
 
-| Perintah | Fungsi | Catatan |
-|---|---|---|
-| `mkdir nama` | Buat direktori | — |
-| `mkdir -p a/b/c` | Buat direktori + parent sekaligus | [OK] hemat waktu |
-| `touch file.txt` | Buat file kosong | Juga update timestamp |
-| `rm file.txt` | Hapus file | [!] langsung hapus |
-| `rmdir folder` | Hapus direktori **kosong** | [OK] aman |
-| `rm -r folder` | Hapus direktori + isinya | [X] tidak ada undo |
-| `rm -ri folder` | Hapus dengan konfirmasi | [OK] **selalu pakai ini** |
+| Perintah | Fungsi |
+|---|---|
+| `mkdir nama` | Buat direktori |
+| `mkdir -p a/b/c` | Buat + parent sekaligus |
+| `touch file` | Buat file kosong |
+| `rm file` | Hapus file |
+| `rmdir folder` | Hapus folder kosong |
+| `rm -r folder` | Hapus folder + isinya `[X]` |
+| `rm -ri folder` | Hapus dengan konfirmasi `[OK]` |
 
-> **Tips senior:** Biasakan `rm -ri` daripada `rm -r`. Konfirmasi per file memang menyebalkan, tapi menyelamatkan dari bencana.
+> **Tips:** Biasakan `rm -ri` — konfirmasi per file menyelamatkan dari bencana.
 
 ---
 
-## 1.3 Melihat Isi File & Direktori
+## 1.3 Melihat Isi File
 
-| Perintah | Fungsi | Kapan dipakai |
-|---|---|---|
-| `ls` | List isi direktori | Cepat, overview |
-| `ls -a` | Tampilkan hidden file | Cek `.bashrc`, `.ssh` |
-| `ls -l` | Format panjang | Lihat permission, owner, size |
-| `ls -lah` | Detail + hidden + human-readable | **Paling sering dipakai** |
-| `ls -li` | Detail + inode number | Debug hard link |
-| `cat file` | Tampilkan seluruh isi | File pendek |
-| `less file` | Tampilkan per halaman | File panjang (log) |
-| `ls --help` | Bantuan | Selalu cek kalau ragu |
+| Perintah | Fungsi |
+|---|---|
+| `ls` | List isi |
+| `ls -a` | Tampilkan hidden |
+| `ls -l` | Detail (permission, owner, size) |
+| `ls -lah` | Detail + hidden + human-readable |
+| `ls -li` | Detail + inode |
+| `cat file` | Seluruh isi |
+| `less file` | Per halaman (untuk log) |
 
-> **Tips:** Kuasai `ls -lah` — ini perintah yang paling sering dipakai sysadmin.
+> **Tips:** `ls -lah` = perintah paling sering dipakai sysadmin.
 
 ---
 
@@ -137,125 +141,99 @@ $ pwd
 
 | Perintah | Fungsi |
 |---|---|
-| `echo "teks" > file` | Tulis ke file (**overwrite** isi lama) |
-| `echo "teks" >> file` | Tambah ke akhir (**append**) |
-| `cat file1 file2 > file3` | Gabungkan dua file |
-| `nano file` | Edit dengan Nano (ramah pemula) |
-| `vim file` | Edit dengan Vim (powerful) |
+| `echo "teks" > file` | Timpa isi file |
+| `echo "teks" >> file` | Tambah di akhir |
+| `cat f1 f2 > f3` | Gabung file |
+| `nano file` | Editor ramah pemula |
+| `vim file` | Editor powerful |
 
-> [!] **Bedakan `>` dan `>>`:**
-> - `>` → **timpa** isi lama. Kalau salah, data hilang.
-> - `>>` → **tambah** di akhir. Lebih aman.
+> [!] `>` menimpa, `>>` menambah. Salah pakai `>` bisa hilangkan data.
 
 ---
 
 ## 1.5 Nano — Editor Ramah Pemula
 
-**Kapan dipakai:** Edit cepat, config file. Semua shortcut tampil di bawah layar.
-
 | Shortcut | Fungsi |
 |---|---|
-| `CTRL + O` lalu `Enter` | Simpan |
+| `CTRL + O` → Enter | Simpan |
 | `CTRL + X` | Keluar |
-| `CTRL + W` | Cari teks |
-| `CTRL + ^` (`CTRL + Shift + 6`) | Set mark (mulai seleksi) |
-| `CTRL + K` | Cut |
-| `CTRL + U` | Paste |
+| `CTRL + W` | Cari |
+| `CTRL + K` / `CTRL + U` | Cut / Paste |
 
 ---
 
 ## 1.6 Vim — Editor Powerful
 
-**Kapan dipakai:** Edit file besar, butuh cepat, atau di server minimal.
-
-**Konsep kunci:** Vim punya **mode** — ini yang bikin pemula bingung.
-
-| Mode | Cara Masuk | Fungsi |
-|---|---|---|
-| Normal | `Esc` | Navigasi & perintah |
-| Insert | `i` | Mengetik teks |
-| Command | `:` | Save/quit/search |
-
-**Perintah penting:**
+**Mode:** `Esc` (normal) · `i` (insert) · `:` (command)
 
 | Perintah | Fungsi |
 |---|---|
-| `i` | Masuk insert mode |
-| `Esc` | Keluar dari insert mode |
 | `:wq` | Save & exit |
-| `:q!` | Exit tanpa save |
-| `/kata` | Cari (`n` next, `N` previous) |
+| `:q!` | Keluar tanpa save |
+| `/kata` | Cari |
 | `yy` / `dd` / `p` | Copy / cut / paste baris |
-| `G` / `gg` | Ke baris terakhir / pertama |
-| `o` | Buka baris baru di bawah |
+| `G` / `gg` | Ke akhir / awal |
+| `o` | Baris baru di bawah |
 
-> **Tips pemula:** Kalau bingung di Vim, tekan `Esc` dulu. Itu "tombol panik" untuk kembali ke normal mode.
+> **Tips:** Kalau bingung di Vim, tekan `Esc` dulu.
 
 ---
 
-# BAGIAN 2 — MANIPULASI DATA
+# BAGIAN 2 — DATA & TEKS
 
 ## 2.1 Pipe, Filter & Hitung
 
-**Konsep:** Pipe (`|`) menghubungkan output satu perintah ke input perintah lain. Ini filosofi Unix: *"do one thing, do it well"*.
-
 | Perintah | Fungsi |
 |---|---|
-| `ls -l \| less` | Lihat daftar dengan scroll |
-| `cat file \| grep kata` | Filter baris yang mengandung `kata` |
-| `ls \| grep -c pola` | Hitung file yang cocok dengan pola |
-| `ls \| wc -l` | Hitung jumlah item |
-| `wc -l` / `-w` / `-c` | Hitung baris / kata / byte |
-
-**Contoh nyata:**
+| `cmd1 \| cmd2` | Output cmd1 ke cmd2 |
+| `cat file \| grep kata` | Filter baris |
+| `ls \| grep -c pola` | Hitung yang cocok |
+| `ls \| wc -l` | Hitung item |
+| `wc -l -w -c` | Hitung baris / kata / byte |
 
 ```bash
-# Cari semua file .log yang mengandung "ERROR"
+# Cari error di log
 $ cat /var/log/*.log | grep ERROR
 
-# Hitung berapa user dengan shell bash
+# Hitung user dengan shell bash
 $ cat /etc/passwd | grep "/bin/bash" | wc -l
 ```
 
-> **Analogi:** Pipe itu seperti pipa air — output dari satu keran langsung masuk ke keran berikutnya.
+> **Analogi:** Pipe = pipa air — output keran pertama masuk ke keran berikutnya.
 
 ---
 
 ## 2.2 Opsi Penting yang Wajib Dihafal
 
-| Opsi | Arti | Berlaku di |
+| Opsi | Arti | Dipakai di |
 |---|---|---|
 | `-a` | All (termasuk hidden) | `ls` |
 | `-l` | Long format | `ls` |
-| `-h` | Human-readable (K, M, G) | `ls`, `df`, `du` |
+| `-h` | Human-readable | `ls`, `df`, `du` |
 | `-r` | Recursive | `cp`, `rm` |
-| `-i` | Interactive (konfirmasi) | `rm`, `cp` |
-| `-p` | Buat parent directory | `mkdir` |
+| `-i` | Interactive | `rm`, `cp` |
+| `-p` | Buat parent | `mkdir` |
 | `-c` | Count | `grep` |
 | `-v` | Invert match | `grep` |
-| `-n` | Numeric / no-newline | `sort`, `echo` |
 
 ---
 
 ## 2.3 Kombinasi Pola yang Sering Dipakai
 
 ```bash
-# Hitung file dengan pola tertentu
+# Hitung file dengan pola
 $ ls | grep -c client
 
-# Lihat isi file panjang dengan scroll
+# Scroll file panjang
 $ cat /etc/passwd | less
 
-# Gabungkan dua file
+# Gabung file
 $ cat notes.txt data.txt > combined.txt
 
-# Tulis hasil ke file dengan template
-$ echo "client = $(ls | grep -c client)" > answer.txt
-
-# Buang pesan error (redirect stderr ke /dev/null)
+# Buang error
 $ ls pola* 2>/dev/null
 
-# Cari 20 file/direktori terbesar di home
+# Top 20 file/direktori terbesar
 $ du -ah ~ | sort -h | tail -20
 ```
 
@@ -265,47 +243,31 @@ $ du -ah ~ | sort -h | tail -20
 
 ## 3.1 Resource Limits (ulimit)
 
-**Konsep:** Linux membatasi resource per user — jumlah file terbuka, proses, memory. Berguna untuk mencegah satu user menghabiskan resource sistem.
-
 | Perintah | Fungsi |
 |---|---|
-| `ulimit -a` | Tampilkan semua limit |
-| `ulimit -n` | Limit open files |
-| `ulimit -u` | Limit proses per user |
-| `ulimit -c` | Limit core file size |
-| `ulimit -f` | Limit ukuran file |
+| `ulimit -a` | Semua limit |
+| `ulimit -n` | Open files |
+| `ulimit -u` | Proses per user |
+| `ulimit -c` | Core file size |
 
-**Membuat limit permanen di `/etc/security/limits.conf`:**
+**Permanent di `/etc/security/limits.conf`:**
 
 ```
 <domain>   <type>   <item>   <value>
+@student   hard     nproc    100
+student    soft     nofile   2000
+student    hard     nofile   3000
 ```
 
-| Field | Nilai |
+| Field | Isi |
 |---|---|
-| `<domain>` | Username, `@groupname`, atau `*` |
-| `<type>` | `soft` (aktif) atau `hard` (batas atas) |
-| `<item>` | `nproc`, `nofile`, `core`, dll |
+| domain | user, `@group`, atau `*` |
+| type | `soft` (aktif) atau `hard` (batas) |
+| item | `nproc`, `nofile`, `core`, dll |
 
-**Contoh:**
+> [!] Perubahan berlaku setelah logout & login ulang.
 
-```
-@student   hard   nproc   100
-student    soft   nofile  2000
-student    hard   nofile  3000
-```
-
-**Verifikasi:**
-
-```bash
-$ ulimit -n     # soft limit
-$ ulimit -Hn    # hard limit
-$ ulimit -u     # max processes
-```
-
-> [!] **Penting:** Perubahan di `limits.conf` hanya berlaku setelah **logout & login ulang**.
-
-> **Tips:** Kalau `ulimit -u` menunjukkan angka kecil (misal 20) dan kamu tidak bisa fork proses baru — itu sebabnya. Cek `ulimit -u` dulu saat ada error *"fork: Resource temporarily unavailable"*.
+> **Tips:** Kalau dapat error *"fork: Resource temporarily unavailable"*, cek `ulimit -u` dulu.
 
 ---
 
@@ -313,29 +275,19 @@ $ ulimit -u     # max processes
 
 | Perintah | Fungsi |
 |---|---|
-| `command &` | Jalankan di background |
+| `cmd &` | Background |
 | `ps aux \| grep nama` | Cari proses |
 | `pgrep -af pola` | Dapatkan PID |
-| `kill PID` | Kirim `SIGTERM` (sopan) |
-| `kill -9 PID` | Paksa (`SIGKILL`) |
-| `killall nama` | Hentikan semua dengan nama sama |
-| `pkill -f pola` | Hentikan berdasarkan pola |
-| `jobs` | Daftar job di shell |
-| `fg` / `bg` | Pindah job ke foreground/background |
+| `kill PID` | SIGTERM (sopan) |
+| `kill -9 PID` | SIGKILL (paksa) |
+| `killall nama` | Semua dengan nama sama |
+| `pkill -f pola` | Berdasarkan pola |
 
-**Sinyal penting:**
+**Sinyal:** `15` SIGTERM · `9` SIGKILL · `1` SIGHUP · `2` SIGINT
 
-| Sinyal | Nomor | Fungsi |
-|---|---|---|
-| `SIGTERM` | 15 | Berhenti sopan (default `kill`) |
-| `SIGKILL` | 9 | Paksa berhenti (tidak bisa ditolak) |
-| `SIGHUP` | 1 | Reload konfigurasi |
-| `SIGINT` | 2 | Interrupt (`CTRL + C`) |
+> **Tips:** Coba `kill` dulu, baru `kill -9` kalau tidak merespons.
 
-> **Tips:** Selalu coba `kill PID` dulu. Baru `kill -9` kalau proses tidak merespons.
-
-**Trik hindari baris `grep` muncul di output:**
-
+**Trik hindari baris grep di output:**
 ```bash
 $ ps aux | grep [k]illing     # bracket trick
 $ pgrep -af killing           # atau pakai pgrep
@@ -348,27 +300,17 @@ $ pgrep -af killing           # atau pakai pgrep
 | Perintah | Fungsi |
 |---|---|
 | `lscpu` | Info CPU |
-| `nproc` | Jumlah logical CPU |
+| `nproc` | Jumlah CPU |
 | `top` | Monitor real-time |
-| `top -bn1` | Mode batch 1 iterasi |
+| `top -bn1` | Batch 1 iterasi |
 
-**Tombol interaktif di `top`:**
+**Tombol `top`:** `l` `t` `m` (toggle) · `P` `M` (sort) · `1` (per-CPU) · `k` (kill) · `q` (quit)
 
-| Tombol | Fungsi |
-|---|---|
-| `l` `t` `m` | Toggle header (load, tasks, memory) |
-| `P` / `M` | Sort by %CPU / %MEM |
-| `1` | Tampilkan per-CPU |
-| `k` | Kill proses |
-| `q` | Keluar |
+**Load average:** `1min, 5min, 15min`
 
-**Load average:**
+> **Aturan:** Load ≈ jumlah CPU → CPU 100% penuh.
 
-- Format: `load average: 1min, 5min, 15min`
-- **Aturan emas:** Load ≈ jumlah CPU → CPU 100% penuh
-- Contoh: 1 CPU dengan load 1.0 = penuh. 4 CPU dengan load 4.0 = penuh.
-
-> **Analogi:** Load average itu seperti panjang antrean di kasir. Kalau antreannya lebih panjang dari jumlah kasir, ada yang menunggu.
+> **Analogi:** Load = panjang antrean di kasir.
 
 ---
 
@@ -376,97 +318,71 @@ $ pgrep -af killing           # atau pakai pgrep
 
 ## 4.1 Package Management (APT)
 
-**Konsep:** APT = cara install/uninstall software di Debian/Ubuntu.
-
 | Perintah | Fungsi |
 |---|---|
-| `sudo apt update` | Refresh daftar paket (**wajib sebelum install**) |
-| `sudo apt upgrade -y` | Upgrade paket terinstal |
+| `sudo apt update` | Refresh daftar paket |
+| `sudo apt upgrade -y` | Upgrade paket |
 | `apt search <kata>` | Cari paket |
 | `apt show <paket>` | Detail paket |
-| `sudo apt install <paket> -y` | Instal |
-| `apt list --installed` | Daftar paket terinstal |
-| `sudo apt remove <paket>` | Hapus (config tersisa) |
+| `sudo apt install <paket> -y` | Install |
+| `apt list --installed` | Paket terinstal |
+| `sudo apt remove <paket>` | Hapus (config sisa) |
 | `sudo apt purge <paket>` | Hapus + config |
-| `sudo apt autoremove` | Bersihkan dependensi tak terpakai |
+| `sudo apt autoremove` | Bersihkan dependensi |
 
-> [!] **Bedakan `remove` dan `purge`:** `remove` menyisakan config. `purge` menghapus semua jejak.
+> [!] `remove` sisa config · `purge` bersih total.
 
 ---
 
 ## 4.2 External Repository & Version Pinning
 
-**Kapan dipakai:** Install versi paket tertentu yang tidak ada di repo default.
-
 | Perintah | Fungsi |
 |---|---|
 | `curl -LsS <url> -o script` | Download script |
 | `sudo tee /etc/apt/sources.list.d/<name>.list` | Buat repo manual |
-| `apt-cache policy <paket>` | Cek versi tersedia |
+| `apt-cache policy <paket>` | Cek versi |
 | `sudo apt install <paket>=<versi>` | Install versi spesifik |
 | `apt-mark hold <paket>` | Kunci versi |
-| `lsb_release -cs` | Cek codename distro |
+| `lsb_release -cs` | Codename distro |
 
-**Format file repo di `/etc/apt/sources.list.d/`:**
-
-```
-deb [arch=amd64,arm64] https://repo.example.com/ubuntu noble main
-```
-
-> [!] **Hati-hati:** Repo eksternal bisa bentrok dengan repo default. Selalu cek `apt-cache policy` setelah menambah repo.
+> [!] Repo eksternal bisa bentrok. Cek `apt-cache policy` setelah tambah.
 
 ---
 
 ## 4.3 Swap File
 
-**Konsep:** Swap = "memori cadangan" di disk saat RAM penuh. Bukan pengganti RAM, tapi penyelamat dari OOM (Out of Memory).
-
 | Perintah | Fungsi |
 |---|---|
-| `fallocate -l 2G /swapfile` | Buat file swap 2 GB |
-| `chmod 600 /swapfile` | Set permission ketat |
-| `mkswap /swapfile` | Format sebagai swap |
+| `fallocate -l 2G /swapfile` | Buat file swap |
+| `chmod 600 /swapfile` | Permission ketat |
+| `mkswap /swapfile` | Format swap |
 | `swapon /swapfile` | Aktifkan |
 | `swapoff /swapfile` | Nonaktifkan |
-| `swapon --show` | Daftar swap aktif |
-| `free -h` | Total memori + swap |
+| `swapon --show` | Swap aktif |
+| `free -h` | Total memori |
 
-**Format `/etc/fstab` untuk swap:**
-
-```
-/swapfile swap swap defaults 0 0
-```
-
-**Ukuran swap yang disarankan:**
+**Fstab:** `/swapfile swap swap defaults 0 0`
 
 | RAM | Swap |
 |---|---|
 | ≤ 2 GB | 2× RAM |
 | 2–8 GB | 1× RAM |
-| > 8 GB | 0.5× RAM, min 4 GB |
+| > 8 GB | 0.5× RAM (min 4 GB) |
 
 ---
 
 ## 4.4 Disk Usage (df & du)
 
-**Perbedaan kunci:**
-
-| Perintah | Menjawab pertanyaan | Sumber data |
+| Perintah | Fungsi | Sumber |
 |---|---|---|
-| `df` | "Berapa sisa ruang disk?" | Superblock (cepat) |
-| `du` | "Folder mana yang besar?" | Setiap file (lambat) |
+| `df -h` | Sisa disk | Superblock (cepat) |
+| `df -Th` | + tipe filesystem | Superblock |
+| `df -i` | Inode | Superblock |
+| `du -sh .` | Ukuran direktori ini | Setiap file (lambat) |
+| `du -h dir/*` | Tiap file | Setiap file |
+| `du --max-depth=1` | Per subdir (1 level) | Setiap file |
 
-| Perintah | Fungsi |
-|---|---|
-| `df -h` | Penggunaan filesystem |
-| `df -Th` | + tipe filesystem |
-| `df -i` | Penggunaan inode |
-| `du -sh .` | Total ukuran direktori ini |
-| `du -h dir/*` | Ukuran tiap file |
-| `du --max-depth=1` | Ukuran per subdirektori (1 level) |
-| `du -ah \| sort -h \| tail -20` | Top 20 file/direktori terbesar |
-
-> **Tips:** Server tiba-tiba penuh? Jalankan `df -h` untuk cari filesystem yang penuh, lalu `du -sh /* | sort -h` untuk cari pelakunya.
+> **Tips:** Disk penuh? `df -h` → `du -sh /* \| sort -h`.
 
 ---
 
@@ -476,63 +392,44 @@ deb [arch=amd64,arm64] https://repo.example.com/ubuntu noble main
 |---|---|
 | `lsblk` / `lsblk -f` | Lihat disk & partisi |
 | `sudo parted /dev/sdX` | Tool partisi GPT/MBR |
-| `(parted) mklabel gpt` | Buat table GPT |
+| `(parted) mklabel gpt` | Table GPT |
 | `(parted) mkpart` | Buat partisi |
-| `(parted) set N lvm on` | Set flag LVM |
-| `sudo fdisk /dev/sdX` | Tool partisi interaktif |
-| `(fdisk) n / d / w / q` | New / delete / write / quit |
+| `(parted) set N lvm on` | Flag LVM |
+| `sudo fdisk /dev/sdX` | Tool partisi |
 | `mkfs -t ext4 -L LABEL /dev/sdX1` | Format + label |
-| `blkid /dev/sdX1` | Lihat label + UUID |
+| `blkid /dev/sdX1` | Label + UUID |
 | `mount LABEL=NAME /mnt/point` | Mount dengan label |
 | `mount -a` | Mount semua dari fstab |
-| `partprobe /dev/sdX` | Reload partition table |
+| `partprobe /dev/sdX` | Reload table |
 
-**Format `/etc/fstab` yang aman:**
+**Fstab aman:** `LABEL=NAMA /mnt/point ext4 defaults,nofail 0 2`
 
-```
-LABEL=NAMA  /mnt/point  ext4  defaults,nofail  0  2
-```
-
-- `LABEL=` → identifikasi device yang konsisten (nama `/dev/sdX` bisa berubah)
-- `nofail` → sistem tetap boot meski partisi tidak ada
-
-> [X] **PENTING:** Sebelum reboot setelah edit `/etc/fstab`, **selalu test** dengan `mount -a`. Kalau fstab rusak, sistem bisa tidak boot.
+> [X] Selalu test `mount -a` sebelum reboot — fstab rusak = sistem tidak boot.
 
 ---
 
 ## 4.6 LVM (Logical Volume Manager)
 
-**Konsep:** LVM = "partisi virtual" yang bisa di-resize tanpa reboot.
-
-**Alur:**
-
-```
-partisi → pvcreate → vgcreate → lvcreate → mkfs → mount → fstab
-```
+**Alur:** `partisi → pvcreate → vgcreate → lvcreate → mkfs → mount → fstab`
 
 | Perintah | Fungsi |
 |---|---|
-| `pvcreate /dev/sdb1` | Buat Physical Volume |
-| `vgcreate <vg> /dev/sdb1 /dev/sdb2` | Buat Volume Group |
-| `lvcreate -n <lv> -L 400M <vg>` | Buat Logical Volume |
+| `pvcreate /dev/sdb1` | Physical Volume |
+| `vgcreate <vg> /dev/sdb1 /dev/sdb2` | Volume Group |
+| `lvcreate -n <lv> -L 400M <vg>` | Logical Volume |
 | `mkfs -t ext4 /dev/<vg>/<lv>` | Format LV |
 | `pvs` / `vgs` / `lvs` | Info ringkas |
-| `pvdisplay` / `vgdisplay` / `lvdisplay` | Info detail |
-| `vgextend <vg> /dev/sdc1` | Tambah PV ke VG |
-| `lvextend -L +200M /dev/<vg>/<lv>` | Perbesar LV |
-| `resize2fs /dev/<vg>/<lv>` | Resize filesystem ext4 |
-| `lvreduce -L 200M /dev/<vg>/<lv>` | Perkecil LV |
-| `lvremove` / `vgremove` / `pvremove` | Hapus (urutan: LV → VG → PV) |
-| `lvcreate -s -n snap -L 100M /dev/<vg>/<lv>` | Snapshot |
+| `vgextend <vg> /dev/sdc1` | Tambah PV |
+| `lvextend -L +200M <lv>` → `resize2fs` | Perbesar |
+| `resize2fs` → `lvreduce -L 200M <lv>` | Perkecil (FS dulu!) |
+| `lvremove` → `vgremove` → `pvremove` | Hapus |
 
-**Aturan penting:**
-
-- Flag `lvm on` wajib di partisi (`parted set N lvm on`)
+**Aturan:**
+- Flag `lvm on` wajib
 - `udevadm settle` sebelum `pvcreate`
 - `systemctl daemon-reload` setelah edit fstab
-- **Resize:**
-  - Perbesar: `lvextend` → `resize2fs`
-  - Perkecil: `resize2fs` → `lvreduce` (filesystem dulu!)
+- Perbesar: `lvextend` → `resize2fs`
+- Perkecil: `resize2fs` → `lvreduce`
 
 ---
 
@@ -540,41 +437,23 @@ partisi → pvcreate → vgcreate → lvcreate → mkfs → mount → fstab
 
 ## 5.1 Inode & Links
 
-**Konsep inode:** Inode = "KTP" file. Setiap file punya inode unik yang menyimpan metadata (permission, owner, size, pointer ke data). **Nama file hanya label** yang menunjuk ke inode.
-
 | Perintah | Fungsi |
 |---|---|
-| `ls -li file` | Lihat inode + link count |
-| `ln source target` | Buat hard link |
-| `ln -s source target` | Buat symbolic link |
-| `readlink link` | Lihat target symlink |
-| `file link` | Identifikasi tipe file |
-| `test -L link` | Cek apakah symlink |
+| `ls -li file` | Inode + link count |
+| `ln source target` | Hard link |
+| `ln -s source target` | Symlink |
+| `readlink link` | Target symlink |
 | `stat file` | Info lengkap |
-| `df -h /path` | Filesystem dari path |
 
-**Perbedaan Hard vs Symbolic Link:**
-
-| Aspek | Hard Link | Symbolic Link |
+| Aspek | Hard | Symbolic |
 |---|---|---|
 | Menunjuk ke | Inode | Path |
-| Inode number | Sama | Berbeda |
-| Lintas filesystem | Tidak | Ya |
-| Link ke direktori | Tidak | Ya |
-| Target dihapus | Data tetap ada | Link rusak (dangling) |
-| Tanda di `ls -l` | File biasa | `l` + `->` |
+| Inode number | Sama | Beda |
+| Lintas FS | Tidak | Ya |
+| Ke direktori | Tidak | Ya |
+| Target hapus | Data tetap | Rusak (dangling) |
 
-**Symlink ke direktori:**
-
-```bash
-$ ln -s /tmp ~/tmplink       # symlink ke /tmp
-$ rm ~/tmplink                # [OK] aman
-```
-
-> [X] **JANGAN** pakai trailing slash saat hapus symlink direktori:
-> ```bash
-> $ rm -r ~/tmplink/    # SALAH - ini hapus isi /tmp!
-> ```
+> [X] Jangan pakai trailing slash saat hapus symlink direktori: `rm -r symlink/` bisa hapus isi target!
 
 ---
 
@@ -582,378 +461,250 @@ $ rm ~/tmplink                # [OK] aman
 
 | Perintah | Fungsi |
 |---|---|
-| `useradd <user>` | Buat user |
-| `useradd -m -s /bin/bash <user>` | Buat + home + shell |
+| `useradd -m -s /bin/bash <user>` | Buat user + home + shell |
 | `userdel -r <user>` | Hapus + home |
 | `usermod -c "comment" <user>` | Set comment |
-| `usermod -aG <group> <user>` | Tambah ke supplementary group |
-| `usermod -L` / `-U` | Lock / unlock user |
+| `usermod -aG <group> <user>` | Tambah ke group |
+| `usermod -L` / `-U` | Lock / unlock |
 | `passwd <user>` | Set password |
-| `passwd -S <user>` | Cek status password |
+| `passwd -S <user>` | Cek status |
 | `groupadd -g <gid> <group>` | Buat group |
 | `id <user>` / `groups <user>` | Info group |
-| `su - <user>` | Switch user |
-| `sudo -l -U <user>` | Cek sudo privilege |
+| `sudo -l -U <user>` | Cek sudo |
 | `visudo -c` | Validasi sudoers |
 
 **File penting:**
 
-| File | Permission | Isi |
+| File | Perm | Isi |
 |---|---|---|
 | `/etc/passwd` | 644 | Data user |
-| `/etc/shadow` | 400 | Hash password & aging |
+| `/etc/shadow` | 400 | Hash password |
 | `/etc/group` | 644 | Data group |
 | `/etc/gshadow` | 400 | Password group |
-| `/etc/skel/` | — | Template home user baru |
+| `/etc/skel/` | — | Template home |
 
-**Format sudoers:**
-
+**Sudoers:**
 ```
 %group  ALL=(ALL)  NOPASSWD:ALL
 user    ALL=(root) NOPASSWD:/usr/bin/systemctl restart nginx
 ```
 
-**Aturan emas:**
+> **Aturan emas:**
+> - Selalu `usermod -aG` (append), bukan `-G`
+> - User harus logout & login ulang setelah ganti group
+> - Permission `/etc/sudoers.d/` harus `0440`
+> - Hindari `NOPASSWD:ALL` di production
 
-- **Selalu `usermod -aG`** (append), jangan `-G` — nanti group lama hilang!
-- User harus **logout & login ulang** setelah diubah group-nya.
-- Permission file di `/etc/sudoers.d/` harus `0440`, tanpa titik di nama.
-- **Hindari `NOPASSWD:ALL`** di production — batasi perintah spesifik.
-
-> [X] **JANGAN pernah edit `/etc/passwd`, `/etc/shadow`, atau `/etc/group` secara langsung.** Gunakan `useradd`, `usermod`, `passwd`, `chage`. Salah edit bisa mengunci kamu dari sistem.
+> [X] Jangan edit `/etc/passwd`, `/etc/shadow`, `/etc/group` langsung — pakai tools resmi.
 
 ---
 
 ## 5.3 Password Aging (chage)
 
-**Konsep:** Password aging memaksa user ganti password secara berkala.
-
 | Perintah | Fungsi |
 |---|---|
-| `chage -l <user>` | Lihat info aging |
+| `chage -l <user>` | Info aging |
 | `chage -M 30 -m 7 -W 5 <user>` | Set max/min/warning |
-| `chage -d 0 <user>` | Paksa ganti saat login berikutnya |
-| `chage -E YYYY-MM-DD <user>` | Set account expiration |
-| `chage -I N <user>` | Set inactive days setelah expired |
+| `chage -d 0 <user>` | Paksa ganti saat login |
+| `chage -E YYYY-MM-DD <user>` | Account expiration |
 
-**Default system-wide di `/etc/login.defs`:**
-
+**Default di `/etc/login.defs`:**
 ```
 PASS_MAX_DAYS   90
 PASS_MIN_DAYS   1
 PASS_WARN_AGE   7
 ```
-
-> Hanya berlaku untuk **user baru**. User lama harus diubah manual dengan `chage`.
-
-**Verifikasi sebelum grading:**
-
-```bash
-$ sudo chage -l <user>       # cek aging
-$ sudo passwd -S <user>      # cek status (harus P)
-$ sudo grep <user> /etc/shadow  # field ke-3 harus 0 kalau force change
-```
+> Hanya untuk user baru.
 
 ---
 
 ## 5.4 Restricted User & Access Control
 
-**Kapan dipakai:** Guest account, akun demo, akun untuk otomasi terbatas.
-
-**Langkah membuat restricted user:**
-
 ```bash
-# 1. Buat user dengan shell normal dulu
-useradd -m -s /bin/bash <username>
-passwd <username>
+# 1. Buat user
+useradd -m -s /bin/bash <user> && passwd <user>
 
-# 2. Ganti ke restricted shell
-usermod -s /bin/rbash <username>
+# 2. Ganti ke rbash
+usermod -s /bin/rbash <user>
 
-# 3. Buat direktori command yang diizinkan
-mkdir -p /home/<username>/bin
-chown <username>:<username> /home/<username>/bin
-chmod 755 /home/<username>/bin
+# 3. Direktori command
+mkdir -p /home/<user>/bin
+chown <user>:<user> /home/<user>/bin
+chmod 755 /home/<user>/bin
 
 # 4. Batasi PATH
-echo 'export PATH=$HOME/bin' >> /home/<username>/.bash_profile
+echo 'export PATH=$HOME/bin' >> /home/<user>/.bash_profile
 
 # 5. Symlink command yang diizinkan
-ln -s /bin/ls /home/<username>/bin/ls
-ln -s /bin/cat /home/<username>/bin/cat
-ln -s /usr/bin/sudo /home/<username>/bin/sudo
+ln -s /bin/ls /home/<user>/bin/ls
+ln -s /bin/cat /home/<user>/bin/cat
+ln -s /usr/bin/sudo /home/<user>/bin/sudo
 
-# 6. Buat group & tambahkan user
-groupadd -f limited<username>
-usermod -aG limited<username> <username>
+# 6. Group
+groupadd -f limited<user>
+usermod -aG limited<user> <user>
 
-# 7. Sudoers terbatas
-visudo -f /etc/sudoers.d/limited<username>
-# Isi: %limited<username> ALL=(ALL) NOPASSWD: /bin/ls, /bin/cat
-chmod 440 /etc/sudoers.d/limited<username>
+# 7. Sudoers
+visudo -f /etc/sudoers.d/limited<user>
+# %limited<user> ALL=(ALL) NOPASSWD: /bin/ls, /bin/cat
+chmod 440 /etc/sudoers.d/limited<user>
 
-# 8. Batasi login SSH
-echo "-:limited<username>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
+# 8. Batasi SSH
+echo "-:limited<user>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 ```
 
-**Batasan `rbash`:**
+**Batasan rbash:** tidak bisa `cd`, set env, command dengan `/`, redirect.
 
-- Tidak bisa `cd` ke direktori lain
-- Tidak bisa set/modifikasi env var (PATH, SHELL, ENV)
-- Tidak bisa command dengan `/` di path
-- Tidak bisa redirect input/output
-
-> [!] **Penting:** `rbash` **BUKAN security tool**. Mudah di-bypass oleh user berpengalaman. Untuk keamanan sejati, pakai SELinux, AppArmor, atau container.
+> [!] rbash bukan security tool — mudah di-bypass.
 
 ---
 
 ## 5.5 SSH & SSH Key Authentication
 
-**Konsep:** SSH = cara aman akses server remote. Key-based auth = login tanpa password, lebih aman dari password.
-
 | Perintah | Fungsi |
 |---|---|
 | `ssh user@host` | Login remote |
-| `ssh user@host "command"` | Jalankan perintah remote |
+| `ssh user@host "cmd"` | Perintah remote |
 | `scp file user@host:/path` | Copy file |
-| `scp -r dir user@host:/path` | Copy direktori |
 | `ssh-keygen -t rsa -b 4096 -N ""` | Generate key pair |
-| `ssh-copy-id -i ~/.ssh/id_rsa.pub -p PORT user@host` | Salin public key |
+| `ssh-copy-id -i key.pub -p PORT user@host` | Salin public key |
 | `ssh -p PORT -o BatchMode=yes user@host "cmd"` | Verifikasi passwordless |
-| `ssh-keyscan -p PORT host >> ~/.ssh/known_hosts` | Ambil host key |
-| `ssh-keygen -R "[host]:PORT"` | Hapus host key lama |
 
-**File SSH & permission:**
+**File & permission:**
 
-| File | Permission | Fungsi |
-|---|---|---|
-| `~/.ssh` | `700` | Direktori SSH |
-| `~/.ssh/id_rsa` | `600` | Private key |
-| `~/.ssh/id_rsa.pub` | `644` | Public key |
-| `~/.ssh/authorized_keys` | `600` | Key yang diizinkan |
-| `~/.ssh/known_hosts` | `644` | Host key server |
+| File | Perm |
+|---|---|
+| `~/.ssh` | 700 |
+| `~/.ssh/id_rsa` | 600 |
+| `~/.ssh/id_rsa.pub` | 644 |
+| `~/.ssh/authorized_keys` | 600 |
 
-> **Tips:** Private key **tidak pernah** dikirim ke server. Hanya public key yang disalin. Server pakai public key untuk "menantang" — hanya private key yang bisa jawab.
+> **Tips:** Private key tidak pernah dikirim ke server — hanya public key.
 
 ---
 
 ## 5.6 Kernel & Boot
 
-| Perintah / Konsep | Fungsi |
+| Perintah | Fungsi |
 |---|---|
-| `cat /proc/cmdline` | Lihat boot parameters aktif |
-| `man bootparam` | Dokumentasi parameter |
-| `lsmod` | Daftar kernel module |
-| `modprobe <module>` | Load/unload module |
-| `modinfo <module>` | Info module |
-| `mount -o remount,rw /` | Remount root read-write |
+| `cat /proc/cmdline` | Boot parameters aktif |
+| `man bootparam` | Dokumentasi |
+| `lsmod` | Kernel modules |
+| `modprobe <module>` | Load module |
+| `mount -o remount,rw /` | Remount read-write |
 
-**Kernel Boot Parameters Umum:**
+**Parameter umum:** `root=UUID=...` · `ro` · `quiet` · `nomodeset` · `crashkernel=`
 
-| Parameter | Fungsi |
+**Rescue Mode:** GRUB → Advanced options → recovery mode
+
+| Opsi | Fungsi |
 |---|---|
-| `root=UUID=...` | Filesystem root |
-| `ro` | Mount root read-only dulu |
-| `quiet` | Kurangi output boot |
-| `nomodeset` | Troubleshooting GPU |
-| `noapic` | Nonaktifkan APIC |
-| `crashkernel=` | Reserve memori crash dump |
-| `resume=UUID=...` | Resume dari hibernasi |
-
-**Rescue Mode (Ubuntu):**
-
-- Akses: GRUB → Advanced options → **(recovery mode)**
-- Opsi: `resume`, `clean`, `dpkg`, `fsck`, `grub`, `network`, `root`
-- Dari root shell:
-  ```bash
-  mount -o remount,rw /
-  passwd <user>
-  update-grub
-  grub-install /dev/sda
-  ```
+| `resume` | Boot normal |
+| `clean` | Bersihkan disk |
+| `dpkg` | Perbaiki paket |
+| `fsck` | Cek filesystem |
+| `grub` | Update bootloader |
+| `root` | Root shell |
 
 ---
 
-# BAGIAN 6 — FILE PERMISSIONS
+# BAGIAN 6 — PERMISSIONS
 
 ## 6.1 chmod — Symbolic Mode
 
-**Konsep:** `chmod` mengubah permission file. **Symbolic mode** pakai huruf (`u`, `g`, `o`) + operator (`=`, `+`, `-`).
-
-**Tiga kelompok:**
-
 | Simbol | Arti |
 |---|---|
-| `u` | User (owner) |
-| `g` | Group |
-| `o` | Others |
-| `a` | All (u+g+o) |
-
-**Tiga permission:**
-
-| Simbol | Nama | Angka | Efek pada File | Efek pada Direktori |
-|---|---|---|---|---|
-| `r` | Read | 4 | Baca isi | List isi |
-| `w` | Write | 2 | Ubah isi | Buat/hapus file |
-| `x` | Execute | 1 | Jalankan | Masuk (`cd`) |
-
-**Tiga operator:**
-
-| Operator | Fungsi |
-|---|---|
-| `=` | Set (reset ke kondisi tertentu) |
-| `+` | Tambah permission |
-| `-` | Hapus permission |
-
-**Contoh:**
+| `u` / `g` / `o` / `a` | User / Group / Others / All |
+| `r` / `w` / `x` | Read / Write / Execute |
+| `=` / `+` / `-` | Set / Tambah / Hapus |
 
 ```bash
-# Set: user=read, group=write, others=execute
-$ chmod u=r,g=w,o=x file.txt
-
-# Tambah write untuk user, hapus write dari group
-$ chmod u+w,g-w file.txt
-
-# Hapus semua permission user & group, sisakan execute untuk others
-$ chmod ug-rwx,o-rw file.txt
-
-# Tambah execute untuk semua
-$ chmod a+x file.txt
+$ chmod u=r,g=w,o=x file      # set
+$ chmod u+w,g-w file          # modifikasi
+$ chmod ug-rwx,o-rw file      # hapus
 ```
 
-**Cara baca `ls -l`:**
-
+**Baca `ls -l`:**
 ```
--rw-rw-r-- 1 student student 0 Aug 26 08:47 file.txt
+-rw-rw-r-- 1 student student 0 ... file
 │└┬┘└┬┘└┬┘
-│ │  │  └── others: r-- (read only)
-│ │  └───── group:  rw- (read + write)
-│ └──────── user:   rw- (read + write)
-└────────── tipe file: - (file biasa)
+│ │  │  └── others
+│ │  └───── group
+│ └──────── user
+└────────── tipe (- file, d dir, l symlink)
 ```
 
-**Tips:**
+> **Tips:** `=` reset, `+`/`-` modifikasi.
 
-- **`=`** → reset permission. Contoh: `chmod u=rwx` menghapus permission lain user.
-- **`+`/`-`** → modifikasi tanpa hapus yang lain. Contoh: `chmod u+x` hanya tambah execute.
-- **Permission direktori** berbeda efeknya dari file. `--x` pada direktori = bisa masuk tapi tidak bisa list isi.
-- **Best practice:**
-  - File biasa: `644` (`rw-r--r--`)
-  - Script: `755` (`rwxr-xr-x`)
-  - File sensitif: `600` (`rw-------`)
-  - Hindari `777` di production!
-
-> [X] **Jangan pernah** `chmod 777` di production — itu membuka akses penuh ke **semua orang**. Celah keamanan besar.
+> [X] Jangan `chmod 777` di production.
 
 ---
 
 ## 6.2 chmod — Numeric Mode (Octal)
 
-**Konversi permission ke angka:**
-
-| Permission | Simbol | Angka |
-|---|---|---|
-| Read | `r` | 4 |
-| Write | `w` | 2 |
-| Execute | `x` | 1 |
+| r | w | x | Angka |
+|---|---|---|---|
+| ✓ | ✓ | ✓ | 7 |
+| ✓ | ✓ | — | 6 |
+| ✓ | — | ✓ | 5 |
+| ✓ | — | — | 4 |
 
 **Kombinasi umum:**
 
-| Angka | Permission | Kapan dipakai |
+| Angka | Permission | Kapan |
 |---|---|---|
-| `644` | `rw-r--r--` | File data, config |
-| `755` | `rwxr-xr-x` | Script, direktori publik |
+| `644` | `rw-r--r--` | File data |
+| `755` | `rwxr-xr-x` | Script, direktori |
 | `600` | `rw-------` | File sensitif |
 | `700` | `rwx------` | Direktori private |
 | `640` | `rw-r-----` | File group-shared |
-| `750` | `rwxr-x---` | Direktori group-shared |
 
-**Format:**
+**Format:** `chmod [user][group][others] file`
 
-```
-chmod  7  5  5  file
-       │  │  └── others
-       │  └───── group
-       └──────── user
-```
-
-**Contoh:**
-
-```bash
-$ chmod 600 file1.txt    # hanya owner
-$ chmod 644 file2.txt    # semua baca, owner tulis
-$ chmod 755 file3.txt    # semua jalankan
-$ chmod 700 scripts/     # direktori private
-```
-
-**Tips:**
-
-- Selalu tulis **3 digit** (`644`, bukan `64`).
-- **Jangan pakai `777`** di production — celah keamanan.
-- Untuk direktori, pastikan `x` ada agar bisa `cd`.
-- Digit ke-4 = special permission (SUID, SGID, sticky bit) — akan dipelajari nanti.
+> **Tips:** Selalu 3 digit. Digit ke-4 = special permission.
 
 ---
 
-## 6.3 chown & chgrp (Belum)
+## 6.3 ACL (Access Control List)
 
-> **Status:** Belum dipelajari.
-> **Akan dipelajari di:** Lab 13.x (kemungkinan).
-> **Rencana isi:** Mengubah owner file (`chown`), mengubah group file (`chgrp`), opsi `-R` untuk rekursif.
-
----
-
-## 6.4 Special Permissions (Belum)
-
-> **Status:** Belum dipelajari.
-> **Akan dipelajari di:** Lab 13.x (kemungkinan).
-> **Rencana isi:** SUID, SGID, Sticky Bit. Kapan dipakai dan kenapa penting.
-
----
-
-## 6.5 ACL (Access Control List)
-
-**Konsep:** Permission tambahan di luar user/group/others. Berguna untuk memberi akses ke **user spesifik** tanpa mengubah owner atau group.
-
-**Tanda file punya ACL:** `+` di output `ls -l`
-
-```
--rw-rw----+ 1 user1 user1 29 ... file.txt
-          ↑
-       ada ACL
-```
+**Tanda file punya ACL:** `+` di `ls -l`
 
 | Perintah | Fungsi |
 |---|---|
-| `sudo apt install acl -y` | Install paket ACL |
-| `setfacl -m u:user:r file` | Tambah ACL user (read) |
-| `setfacl -m u:user:rw file` | Tambah ACL user (read+write) |
-| `setfacl -m u:user:r-x file` | Tambah ACL user (read+execute) |
-| `setfacl -m g:group:r file` | Tambah ACL group |
-| `setfacl -x u:user file` | Hapus ACL user tertentu |
+| `sudo apt install acl -y` | Install paket |
+| `setfacl -m u:user:r file` | ACL user (read) |
+| `setfacl -m u:user:rw file` | ACL user (read+write) |
+| `setfacl -m g:group:r file` | ACL group |
+| `setfacl -x u:user file` | Hapus ACL user |
 | `setfacl -b file` | Hapus semua ACL |
-| `setfacl -d -m u:user:r dir/` | Set default ACL di direktori |
-| `setfacl -R -m u:user:r dir/` | Set ACL rekursif |
+| `setfacl -d -m u:user:r dir/` | Default ACL |
+| `setfacl -R -m u:user:r dir/` | Rekursif |
 | `getfacl file` | Lihat ACL |
-| `getfacl -R dir/` | Lihat ACL rekursif |
 
-**Struktur ACL:**
-
+**Struktur:**
 ```
 user::rw-          ← owner
 user:user2:r--     ← ACL user
 group::rw-         ← group owner
-mask::rw-          ← batas maksimum ACL
+mask::rw-          ← batas max ACL
 other::---         ← others
 ```
 
-**Tips:**
+> **Tips:** Kalau ACL tidak bekerja, cek `mask`. `-d` = default, `-R` = rekursif.
 
-- `mask` membatasi permission efektif — kalau ACL tidak bekerja, cek mask.
-- `chmod o=` untuk membuat file "private" dari others.
-- `-d` untuk default ACL (file baru di direktori mewarisi).
-- `-R` untuk rekursif.
-- ACL bukan pengganti SELinux/AppArmor untuk keamanan sejati.
+---
+
+## 6.4 chown & chgrp
+
+> **Status:** Planned (belum dipelajari di lab).
+> **Preview:** `chown user:group file` — ubah owner & group. Hanya root.
+
+---
+
+## 6.5 Special Permissions (SUID, SGID, Sticky)
+
+> **Status:** Planned.
+> **Preview:** `s` (SUID/SGID) dan `t` (sticky) di `ls -l`. Contoh: `/usr/bin/passwd` punya SUID.
 
 ---
 
@@ -963,16 +714,14 @@ other::---         ← others
 
 | Konsep | Penjelasan |
 |---|---|
-| `>` vs `>>` | `>` timpa isi, `>>` tambah di akhir |
-| `rmdir` vs `rm -r` | `rmdir` hanya direktori kosong, `rm -r` termasuk isi |
-| `vi` vs `vim` | `vi` original, `vim` enhanced (banyak distro me-link `vi` → `vim`) |
-| Nano vs Vim | Nano ramah pemula, Vim powerful (butuh hafal mode) |
-| `soft` vs `hard` limit | `soft` aktif, `hard` batas atas |
-| `remove` vs `purge` | `remove` sisa config, `purge` bersih total |
-| `df` vs `du` | `df` = filesystem, `du` = direktori |
-| `usermod -G` vs `-aG` | `-G` overwrite, `-aG` append |
-| Hard link vs symlink | Hard = inode sama, symlink = path |
-| `=` vs `+` vs `-` (chmod) | `=` reset, `+` tambah, `-` hapus |
+| `>` vs `>>` | Timpa vs tambah |
+| `rmdir` vs `rm -r` | Kosong vs berisi |
+| `soft` vs `hard` limit | Aktif vs batas |
+| `remove` vs `purge` | Sisa config vs bersih |
+| `df` vs `du` | Filesystem vs direktori |
+| `usermod -G` vs `-aG` | Overwrite vs append |
+| Hard link vs symlink | Inode vs path |
+| `=` vs `+` vs `-` (chmod) | Reset vs tambah vs hapus |
 
 ---
 
@@ -980,13 +729,13 @@ other::---         ← others
 
 | Perintah | Bahaya |
 |---|---|
-| [X] `rm -rf /` | Hapus seluruh sistem |
-| [X] `rm -rf ~/` | Hapus seluruh home |
-| [X] `rm -r symlink/` | Hapus isi target symlink |
-| [X] Edit `/etc/fstab` tanpa test | Sistem tidak boot |
+| [X] `rm -rf /` | Hapus sistem |
+| [X] `rm -rf ~/` | Hapus home |
+| [X] `rm -r symlink/` | Hapus isi target |
+| [X] Edit `/etc/fstab` tanpa test | Tidak boot |
 | [X] Edit `/etc/passwd` langsung | Lock dari sistem |
 | [X] `mkfs` di partisi ter-mount | Hapus data |
-| [X] `chmod -R 777 /` | Rusak permission sistem |
+| [X] `chmod -R 777 /` | Rusak permission |
 | [X] `dd if=/dev/zero of=/dev/sda` | Wipe disk |
 
 ---
@@ -995,241 +744,174 @@ other::---         ← others
 
 | Masalah | Langkah Awal |
 |---|---|
-| Sistem tidak boot | Cek `/etc/fstab` dengan `mount -a`, atau masuk rescue mode |
+| Tidak boot | Cek fstab, rescue mode |
 | Disk penuh | `df -h` → `du -sh /* \| sort -h` |
 | Lupa password root | Rescue mode → `passwd` |
-| `fork: Resource temporarily unavailable` | Cek `ulimit -u`, kurangi proses, atau naikkan limit |
-| SSH tidak bisa login | Cek permission `~/.ssh`, `authorized_keys`, `PermitRootLogin` |
-| Load average tinggi | `top` → cek proses, bandingkan dengan `nproc` |
-| File hilang | Cek hard link dengan `ls -li`, atau cek backup |
-| Permission denied | Cek `ls -l`, mungkin butuh `chmod` atau `sudo` |
+| Fork error | `ulimit -u` |
+| SSH gagal | Cek `~/.ssh` permission |
+| Load tinggi | `top`, bandingkan `nproc` |
+| Permission denied | `ls -l`, mungkin butuh `sudo` |
 
 ---
 
-## 7.4 Best Practice untuk Pemula
+## 7.4 Best Practice
 
-1. **Selalu pakai `sudo`** untuk perintah yang butuh root. Jangan login sebagai root langsung.
-2. **Biasakan `ls -lah`** sebelum menghapus — pastikan yang dihapus benar.
-3. **Pakai `rm -ri`** daripada `rm -r` — konfirmasi menyelamatkan.
-4. **Test `/etc/fstab` dengan `mount -a`** sebelum reboot.
-5. **Jangan edit file sistem langsung** — pakai tools resmi.
-6. **Backup dulu** sebelum eksperimen berbahaya.
-7. **Baca `man` page** — `man ls`, `man chage`, dll.
-8. **Catat** apa yang kamu lakukan — untuk dirimu sendiri nanti.
-9. **Test di VM** sebelum produksi.
-10. **Konsisten** dengan konvensi — jangan bikin standar sendiri.
-11. **Jangan asal `chmod 777`** — permission longgar = risiko keamanan.
+1. Pakai `sudo`, jangan login root langsung
+2. `ls -lah` sebelum hapus
+3. `rm -ri` daripada `rm -r`
+4. Test fstab dengan `mount -a`
+5. Jangan edit file sistem langsung
+6. Backup sebelum eksperimen
+7. Baca `man`
+8. Test di VM sebelum produksi
+9. Jangan `chmod 777`
+10. Catat apa yang dilakukan
 
 ---
 
 ## 7.5 Glosarium
 
-| Istilah | Arti Singkat |
+| Istilah | Arti |
 |---|---|
-| **APT** | Advanced Package Tool — package manager Debian/Ubuntu |
-| **Bash** | Bourne Again Shell — shell default di banyak Linux |
-| **chmod** | Change mode — ubah permission file |
-| **chown** | Change owner — ubah pemilik file |
-| **chroot** | Mengubah root directory untuk isolasi |
-| **Cron** | Scheduler untuk menjalankan tugas berkala |
-| **Daemon** | Proses yang berjalan di background |
-| **df** | Disk Free — lihat penggunaan filesystem |
-| **du** | Disk Usage — lihat ukuran file/direktori |
-| **ext4** | Filesystem default di banyak distro Linux |
-| **fstab** | File System Table — konfigurasi mount otomatis |
-| **GECOS** | Field comment di `/etc/passwd` (nama lengkap, dll) |
-| **GID** | Group ID — nomor unik untuk group |
-| **GRUB** | Bootloader yang umum dipakai Linux |
-| **Hard link** | Nama tambahan yang menunjuk inode yang sama |
-| **Inode** | "KTP" file — metadata, bukan nama |
-| **Kernel** | Inti sistem operasi yang mengelola hardware |
-| **Load average** | Panjang antrean proses yang menunggu CPU |
-| **LVM** | Logical Volume Manager — partisi virtual |
-| **MBR** | Master Boot Record — skema partisi lama |
-| **GPT** | GUID Partition Table — skema partisi modern |
-| **OOM** | Out of Memory — sistem kehabisan RAM |
-| **PAM** | Pluggable Authentication Modules |
-| **Parted** | Tool untuk partisi disk (GPT/MBR) |
-| **Permission** | Hak akses file (read, write, execute) |
-| **Pipe** | `\|` — menghubungkan output ke input |
-| **PV** | Physical Volume (LVM) |
-| **VG** | Volume Group (LVM) |
-| **LV** | Logical Volume (LVM) |
-| **rbash** | Restricted bash — shell terbatas |
-| **Root** | Superuser dengan akses tak terbatas |
-| **SELinux** | Security-Enhanced Linux — MAC |
-| **AppArmor** | Alternatif SELinux, lebih mudah |
-| **SIGTERM** | Sinyal 15 — berhenti sopan |
-| **SIGKILL** | Sinyal 9 — paksa berhenti |
-| **SSH** | Secure Shell — akses remote aman |
-| **Sticky bit** | Special permission untuk direktori shared |
-| **SUID** | Set User ID — jalankan sebagai owner |
-| **SGID** | Set Group ID — jalankan sebagai group |
-| **sudo** | Superuser Do — jalankan sebagai root |
-| **Swap** | Memori cadangan di disk |
-| **Symlink** | "Shortcut" ke file/folder lain |
-| **Systemd** | Init system modern di banyak distro |
-| **UID** | User ID — nomor unik untuk user |
-| **ulimit** | User limit — batas resource |
-| **Umask** | Default permission untuk file/direktori baru |
-| **Vim** | Vi IMproved — editor powerful |
-| **Zombie** | Proses yang sudah selesai tapi belum di-reap parent-nya |
-| **ACL** | Access Control List — permission granular per user/group |
-| **setfacl** | Set file ACL — perintah untuk modifikasi ACL |
-| **getfacl** | Get file ACL — perintah untuk melihat ACL |
-| **Mask (ACL)** | Batas maksimum permission efektif ACL |
+| **ACL** | Access Control List — permission granular |
+| **APT** | Package manager Debian/Ubuntu |
+| **Bash** | Shell default Linux |
+| **chmod** | Change mode — ubah permission |
+| **chown** | Change owner |
+| **chgrp** | Change group |
+| **Cron** | Scheduler tugas berkala |
+| **Daemon** | Proses background |
+| **df** | Disk Free |
+| **du** | Disk Usage |
+| **ext4** | Filesystem default |
+| **fstab** | File System Table |
+| **GECOS** | Comment di `/etc/passwd` |
+| **GID** | Group ID |
+| **GRUB** | Bootloader |
+| **Hard link** | Nama tambahan ke inode sama |
+| **Inode** | Metadata file (bukan nama) |
+| **Kernel** | Inti OS |
+| **Load average** | Antrean proses |
+| **LVM** | Logical Volume Manager |
+| **OOM** | Out of Memory |
+| **PAM** | Pluggable Auth Modules |
+| **Permission** | Hak akses |
+| **Pipe** | `\|` — sambung output |
+| **PV/VG/LV** | Physical/Volume/Logical (LVM) |
+| **rbash** | Restricted bash |
+| **Root** | Superuser |
+| **SELinux/AppArmor** | Mandatory access control |
+| **SGID** | Set Group ID |
+| **SIGTERM/SIGKILL** | Sinyal 15 / 9 |
+| **SSH** | Secure Shell |
+| **SUID** | Set User ID |
+| **Sticky bit** | Proteksi hapus di direktori |
+| **sudo** | Superuser Do |
+| **Swap** | Memori cadangan |
+| **Symlink** | Shortcut |
+| **Systemd** | Init system |
+| **UID** | User ID |
+| **ulimit** | User limit |
+| **Umask** | Filter permission default |
+| **Vim** | Editor powerful |
+| **Zombie** | Proses selesai belum di-reap |
 
 ---
 
-## 7.6 Kalau Baru Mulai
+## 7.6 Kalau Panic
 
-**Urutan belajar yang disarankan:**
-
-1. **Bagian 1** — kuasai navigasi & file. Ini fondasi.
-2. **Bagian 2** — praktik pipe & filter di terminal. Ini inti Linux.
-3. **Bagian 3** — pelajari proses & resource saat sudah nyaman.
-4. **Bagian 4** — storage & package untuk server.
-5. **Bagian 5** — security & user management untuk produksi.
-6. **Bagian 6** — permission, dasar keamanan file.
-7. **Bagian 7** — referensi cepat saat lupa.
-
-**Tips belajar:**
-- Praktik langsung di terminal — jangan cuma baca.
-- Bikin VM sendiri (VirtualBox/VMware) untuk eksperimen bebas.
-- Ulangi perintah sampai hafal tanpa lihat cheatsheet.
-- Fokus ke **satu topik per minggu** — jangan loncat-loncat.
-
----
-
-## 7.7 Command yang Sering Typo
-
-Berdasarkan pengalaman pribadi dan teman-teman:
-
-| Typo Umum | Seharusnya |
+| Situasi | Langkah |
 |---|---|
-| `chage -l user>` (ada `>`) | `chage -l user` |
-| `du_each.tx` | `du_each.txt` |
-| `usermod -G` (tanpa `-a`) | `usermod -aG` |
-| `df_all.txt>` | `df_all.txt` |
-| `wm` (bukan `rm`) | `rm` |
-| `ifconfig` (deprecated) | `ip a` |
-| `apt-get install` tanpa `sudo` | `sudo apt install` |
-| `rm -rf /` (ada spasi) | `rm -rf /path` |
-| `chmod 777` (semua file) | `chmod 644` atau `755` |
-| `chmod u=rwx,` (koma terakhir) | `chmod u=rwx` |
-
-> **Tips:** Kalau muncul prompt `>`, berarti bash menunggu input tambahan. Tekan **CTRL + C** untuk membatalkan. Biasanya karena ada tanda kutip atau `>` yang belum ditutup.
-
----
-
-## 7.8 Kalau Panic
-
-**Situasi darurat dan langkah pertamanya:**
-
-| Situasi | Langkah Pertama |
-|---|---|
-| Sistem tidak boot | Masuk rescue mode dari GRUB |
-| Lupa password root | Rescue mode → `passwd` |
-| Disk penuh total | `df -h` → `du -sh /* \| sort -h` → hapus file besar |
-| Fork error | `ulimit -u` — cek limit, kurangi proses |
-| SSH tidak bisa login | Cek `~/.ssh` permission, `sshd_config` |
-| Command hang | `CTRL + C` (interrupt) |
-| Vim stuck | `Esc` → `:q!` (keluar tanpa save) |
-| Nano stuck | `CTRL + X` → `N` (discard) |
+| Tidak boot | Rescue mode dari GRUB |
+| Lupa password root | Rescue → `passwd` |
+| Disk penuh | `df -h` → `du -sh /* \| sort -h` |
+| Fork error | `ulimit -u` |
+| Command hang | `CTRL + C` |
+| Vim stuck | `Esc` → `:q!` |
+| Nano stuck | `CTRL + X` → `N` |
 | Terminal kacau | `reset` atau `stty sane` |
-| Lupa perintah | `man <perintah>` atau `--help` |
-| Permission denied | `ls -l`, cek owner & permission, mungkin butuh `sudo` |
+| Lupa perintah | `man <cmd>` atau `--help` |
 
-> **Tips:** Kalau benar-benar panik dan tidak tahu harus apa — **jangan ketik apapun dulu**. Tarik napas, baca pesan error, baru cari solusi. Panik biasanya bikin kesalahan makin parah.
+> **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
 ---
 
-# PANDUAN MAINTENANCE
+# BAGIAN 8 — PANDUAN UPDATE
 
-## Template Menambah Section Baru
+## 8.1 Cara Nambah Section
 
-Setiap kali selesai lab baru, tambahkan section dengan format ini:
+**Setiap selesai 1 lab baru, cukup 3 langkah:**
+
+1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `6.6`, `6.7` — tidak perlu renumber yang lama.
+2. **Update tabel Progress** di atas.
+3. **Tambah baris** di Changelog.
+
+**Format section minimal:**
 
 ```markdown
 ## X.Y Nama Topik
 
-**Konsep:** [1-2 kalimat penjelasan singkat]
+**Konsep:** 1 kalimat penjelasan.
 
 | Perintah | Fungsi |
 |---|---|
-| `perintah` | Deskripsi |
-
-**Contoh:**
-
-```bash
-$ perintah --opsi
-output
-```
+| `cmd` | Deskripsi |
 
 **Tips:**
+- Poin praktis
 
-- [Tips praktis dari pengalaman]
-- [Kesalahan umum yang harus dihindari]
-
-> [Penanda] **Catatan penting:** [Peringatan atau info krusial]
+> [!] Catatan penting
 ```
 
-**Checklist setiap selesai 1 lab baru:**
-
-1. [ ] Tambah section baru di Bagian yang sesuai (atau buat Bagian baru).
-2. [ ] Update Daftar Isi di atas.
-3. [ ] Update header "Lab 3.1 – X.Y".
-4. [ ] Update referensi lab di bagian bawah.
-5. [ ] Kalau ada istilah baru, tambah ke Glosarium.
-6. [ ] Kalau ada typo baru yang sering terjadi, tambah ke section 7.7.
-7. [ ] Commit dengan pesan deskriptif.
-
-**Kapan buat Bagian baru:**
-
-- Kalau topiknya benar-benar berbeda (misal: Networking, Docker, Ansible).
-- Kalau section di Bagian yang ada sudah lebih dari 6-7.
-- Kalau materinya cukup besar untuk berdiri sendiri.
+**Kalau butuh Bagian baru:** Kalau topik benar-benar beda (Networking, Docker, dll), buat Bagian 9, 10, dst. Tidak perlu reorganisasi.
 
 ---
 
-## Riwayat Update
+## 8.2 Changelog
 
 | Tanggal | Update |
 |---|---|
-| 2026-10-XX | Tambah Bagian 6 — File Permissions (Lab 13.1) |
-| 2026-10-XX | Perbaiki encoding, tambah template maintenance |
-| 2026-10-XX | Tambah Bagian 5 — User & Security |
-| 2026-10-XX | Tambah Bagian 6.2 — Chmod Octal (Lab 13.2) |
-| 2026-10-XX | Tambah Bagian 6.5 — ACL (Lab 13.3) |
+| 2026-10-08 | Tambah 6.3 ACL (Lab 13.3) |
+| 2026-10-08 | Tambah 6.2 chmod Octal (Lab 13.2) |
+| 2026-10-08 | Tambah 6.1 chmod Symbolic (Lab 13.1) |
+| 2026-10-07 | Tambah Bagian 5 User & Security |
+| 2026-10-06 | Rombak struktur — encoding fix, TOC ringkas |
 | ... | ... |
+
+**Cara pakai:**
+- Setiap update, tambahkan **satu baris** di atas.
+- Format: `YYYY-MM-DD | Deskripsi singkat`.
+- Tidak perlu detail — cukup untuk lacak kapan dan apa.
 
 ---
 
 ## Disclaimer
 
-> Cheatsheet ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
-> Materi asli tidak didistribusikan di repositori ini.
+> Catatan ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
+> Materi asli tidak didistribusikan.
 
 ---
 
-**Referensi Lab:**
+## Referensi Lab
 
-- **Bagian 1–2:** Lab 3.1 – 3.4 (File, Directory, Editor, Pipe)
-- **Bagian 3.1:** Lab 4.1 – 4.2 (Resource Limits)
-- **Bagian 3.2:** Lab 5.1 (Process Management)
-- **Bagian 3.3:** Lab 7.1 (Monitoring)
-- **Bagian 4.1:** Lab 6.1 (APT)
-- **Bagian 4.2:** Lab 6.2 (External Repository)
-- **Bagian 4.3:** Lab 9.1 (Swap)
-- **Bagian 4.4:** Lab 9.2 (df/du)
-- **Bagian 4.5:** Lab 9.3 (Partition)
-- **Bagian 4.6:** Lab 10.1 (LVM)
-- **Bagian 5.1:** Lab 8.1 – 8.3 (Inode, Hard Link, Symlink)
-- **Bagian 5.2:** Lab 12.1, 12.5 (User & Group)
-- **Bagian 5.3:** Lab 12.3 (Password Aging)
-- **Bagian 5.4:** Lab 12.2 (Restricted User)
-- **Bagian 5.5:** Lab 12.4 (SSH Key Auth)
-- **Bagian 5.6:** Lab 11.1 (Kernel & Boot)
-- **Bagian 6.1:** Lab 13.1 (Chmod Symbolic)
-- **Bagian 6.2:** Lab 13.2 (Chmod Octal)
-- **Bagian 6.3:** Lab 13.3 (ACL)
+- **1.x:** Lab 3.1 – 3.4
+- **2.x:** Lab 3.3, 3.4
+- **3.1:** Lab 4.1 – 4.2
+- **3.2:** Lab 5.1
+- **3.3:** Lab 7.1
+- **4.1:** Lab 6.1
+- **4.2:** Lab 6.2
+- **4.3:** Lab 9.1
+- **4.4:** Lab 9.2
+- **4.5:** Lab 9.3
+- **4.6:** Lab 10.1
+- **5.1:** Lab 8.1 – 8.3
+- **5.2:** Lab 12.1, 12.5
+- **5.3:** Lab 12.3
+- **5.4:** Lab 12.2
+- **5.5:** Lab 12.4
+- **5.6:** Lab 11.1
+- **6.1:** Lab 13.1
+- **6.2:** Lab 13.2
+- **6.3:** Lab 13.3
+- **6.4, 6.5:** Planned
