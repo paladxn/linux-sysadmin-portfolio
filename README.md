@@ -35,6 +35,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 12.3 | Manajemen Password Expiration Policy | ✅ | [Lihat](12-user-group/lab-12.3-password-expiration-policy.md) |
 | 12.4 | Configure SSH Key Authentication | ✅ | [Lihat](12-user-group/lab-12.4-configure-ssh-key-auth.md) |
 | 12.5 | Quiz: Create User and Group | ✅ | [Lihat](12-user-group/lab-12.5-quiz-create-user-group.md) |
+| 13.1 | Chmod Symbolic Mode | ✅ | [Lihat](13-permissions/lab-13.1-chmod-symbolic.md) |
 
 ## 📖 Referensi Cepat
 
