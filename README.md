@@ -39,6 +39,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 13.1 | Chmod Symbolic Mode | ✅ | [Lihat](13-permissions/lab-13.1-chmod-symbolic.md) |
 | 13.2 | Chmod Octal Digit | ✅ | [Lihat](13-permissions/lab-13.2-chmod-octal.md) |
 | 13.3 | Managing File Access with ACL | ✅ | [Lihat](13-permissions/lab-13.3-acl.md) |
+| 13.4 | Managing File Attributes (`chattr` & `lsattr`) | ✅ | [Lihat](13-permissions/lab-13.4-file-attributes.md) |
 
 ## 📖 Referensi Cepat
 
