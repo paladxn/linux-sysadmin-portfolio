@@ -20,7 +20,7 @@ Dari kursus Adinusa (Lab 3.x – 13.x) + praktik pribadi.
 | Package & Storage | 6.1 – 6.2, 9.1 – 9.3, 10.1 | Selesai |
 | Filesystem & Links | 8.1 – 8.3 | Selesai |
 | User & Security | 11.1, 12.0 – 12.5 | Selesai |
-| Permissions | 13.0 – 13.3 | Selesai |
+| Permissions | 13.0 – 13.6 | Selesai |
 | — | 13.4+ | Belum |
 
 **Terakhir update:** 2026-10-XX (Lab 13.3 ACL)
@@ -876,6 +876,9 @@ other::---         ← others
 | 2026-10-08 | Tambah 6.1 chmod Symbolic (Lab 13.1) |
 | 2026-10-07 | Tambah Bagian 5 User & Security |
 | 2026-10-06 | Rombak struktur — encoding fix, TOC ringkas |
+| 2026-10-09 | Tambah 6.6 File Attributes (Lab 13.4) |
+| 2026-10-09 | Tambah quiz permissions (Lab 13.5) |
+| 2026-10-09 | Tambah quiz permissions & ownership (Lab 13.6) |
 | ... | ... |
 
 **Cara pakai:**
