@@ -40,6 +40,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 13.2 | Chmod Octal Digit | ✅ | [Lihat](13-permissions/lab-13.2-chmod-octal.md) |
 | 13.3 | Managing File Access with ACL | ✅ | [Lihat](13-permissions/lab-13.3-acl.md) |
 | 13.4 | Managing File Attributes (`chattr` & `lsattr`) | ✅ | [Lihat](13-permissions/lab-13.4-file-attributes.md) |
+| 13.5 | Quiz: File Permissions, Ownership & ACLs | ✅ | [Lihat](13-permissions/lab-13.5-quiz-permissions.md) |
 
 ## 📖 Referensi Cepat
 
