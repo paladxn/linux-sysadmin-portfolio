@@ -41,6 +41,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 13.3 | Managing File Access with ACL | ✅ | [Lihat](13-permissions/lab-13.3-acl.md) |
 | 13.4 | Managing File Attributes (`chattr` & `lsattr`) | ✅ | [Lihat](13-permissions/lab-13.4-file-attributes.md) |
 | 13.5 | Quiz: File Permissions, Ownership & ACLs | ✅ | [Lihat](13-permissions/lab-13.5-quiz-permissions.md) |
+| 13.6 | Quiz: File Permissions & Ownership | ✅ | [Lihat](13-permissions/lab-13.6-quiz-permissions-ownership.md) |
 
 ## 📖 Referensi Cepat
 
