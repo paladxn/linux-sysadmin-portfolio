@@ -21,9 +21,9 @@ Dari kursus Adinusa (Lab 3.x – 15.x) + praktik pribadi.
 | Filesystem & Links | 8.1 – 8.3 | Selesai |
 | User & Security | 11.1, 12.0 – 12.5 | Selesai |
 | Permissions | 13.0 – 13.6 | Selesai |
-| Networking | 14.0 – 15.1 | Selesai |
+| Networking | 14.0 – 15.2 | Selesai |
 
-**Terakhir update:** 2026-10-10 (Lab 15.1 Static Configuration)
+**Terakhir update:** 2026-10-10 (Lab 15.2 Apache Custom Domain)
 
 ---
 
@@ -85,6 +85,7 @@ Dari kursus Adinusa (Lab 3.x – 15.x) + praktik pribadi.
 - [8.2 Network Device & `ip` Command](#82-network-device--ip-command)
 - [8.3 Name Resolution & Diagnostics](#83-name-resolution--diagnostics)
 - [8.4 Static Configuration (Netplan)](#84-static-configuration-netplan)
+- [8.5 Apache Virtual Host](#85-apache-virtual-host)
 
 **Panduan Update**
 - [9.1 Cara Nambah Section](#91-cara-nambah-section)
@@ -801,6 +802,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | `=` vs `+` vs `-` (chmod) | Reset vs tambah vs hapus |
 | `r` vs `rX` (ACL) | Read-only vs read + execute kondisional |
 | `ip` vs `ifconfig` | Modern vs legacy |
+| `reload` vs `restart` (service) | Baca ulang config vs matikan-nyalakan |
 
 ---
 
@@ -817,6 +819,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | [X] `chmod -R 777 /` | Rusak permission |
 | [X] `dd if=/dev/zero of=/dev/sda` | Wipe disk |
 | [X] Salah set default gateway | Putus koneksi network |
+| [X] Edit vhost Apache tanpa `configtest` | Apache error |
 
 ---
 
@@ -834,6 +837,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | ACL tidak berlaku | Cek `mask` dengan `getfacl` |
 | Network tidak jalan | `ping 8.8.8.8` → `ip a` → `ip route` |
 | DNS tidak resolve | Cek `/etc/resolv.conf`, uji dengan `dig` |
+| Apache tidak jalan | `systemctl status apache2`, `apache2ctl configtest` |
 
 ---
 
@@ -850,6 +854,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 9. Jangan `chmod 777`
 10. Catat apa yang dilakukan
 11. YAML pakai **spasi**, bukan Tab
+12. `apache2ctl configtest` sebelum reload Apache
 
 ---
 
@@ -858,6 +863,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Istilah | Arti |
 |---|---|
 | **ACL** | Access Control List — permission granular |
+| **Apache** | Web server populer di Linux |
+| **a2ensite / a2dissite** | Enable/disable virtual host |
 | **APT** | Package manager Debian/Ubuntu |
 | **Bash** | Shell default Linux |
 | **chattr** | Change attribute |
@@ -870,6 +877,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **df** | Disk Free |
 | **dig** | DNS lookup tool |
 | **DNS** | Domain Name System |
+| **DocumentRoot** | Direktori file web di Apache |
 | **du** | Disk Usage |
 | **ext4** | Filesystem default |
 | **FQDN** | Fully Qualified Domain Name |
@@ -898,6 +906,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Private IP** | IP internal (10/8, 172.16/12, 192.168/16) |
 | **PV/VG/LV** | Physical/Volume/Logical (LVM) |
 | **rbash** | Restricted bash |
+| **reload / restart** | Baca ulang vs matikan-nyalakan service |
 | **Root** | Superuser |
 | **Routing** | Pemilihan jalur paket |
 | **SELinux/AppArmor** | Mandatory access control |
@@ -915,6 +924,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **ulimit** | User limit |
 | **Umask** | Filter permission default |
 | **Vim** | Editor powerful |
+| **VirtualHost** | Konfigurasi domain di Apache |
+| **www-data** | User default Apache |
 | **Zombie** | Proses selesai belum di-reap |
 
 ---
@@ -933,6 +944,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Terminal kacau | `reset` atau `stty sane` |
 | Lupa perintah | `man <cmd>` atau `--help` |
 | Network down | `ping 8.8.8.8` → cek `ip a` → `ip route` |
+| Apache error | `apache2ctl configtest` → cek `/var/log/apache2/error.log` |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
@@ -1148,13 +1160,83 @@ network:
 
 ---
 
+## 8.5 Apache Virtual Host
+
+**Konsep:** Apache = web server populer. Virtual host = satu server, banyak domain.
+
+**Struktur direktori:**
+```
+/etc/apache2/
+├── sites-available/   ← config vhost (draft)
+├── sites-enabled/     ← symlink config aktif
+└── apache2.conf       ← config utama
+/var/www/<domain>/     ← file web
+```
+
+| Perintah | Fungsi |
+|---|---|
+| `sudo apt install apache2` | Install Apache |
+| `sudo systemctl status apache2` | Cek status |
+| `sudo systemctl reload apache2` | Reload config |
+| `sudo systemctl restart apache2` | Restart service |
+| `sudo a2ensite <site>.conf` | Aktifkan site |
+| `sudo a2dissite <site>.conf` | Nonaktifkan |
+| `sudo a2query -s` | Site aktif |
+| `sudo apache2ctl configtest` | Cek syntax config |
+| `sudo apache2ctl -S` | Ringkasan vhost |
+| `curl http://<domain>` | Verifikasi web |
+
+**Contoh config vhost:**
+
+```apache
+<VirtualHost *:80>
+        ServerName www.<domain>
+        ServerAlias <domain>
+        DocumentRoot /var/www/<domain>
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+```
+
+**Alur konfigurasi:**
+```
+1. Install apache2
+2. Buat document root + index.html
+3. Buat config vhost di sites-available/
+4. Enable dengan a2ensite (buat symlink)
+5. Reload/restart Apache
+6. Tambah domain ke /etc/hosts (testing lokal)
+7. Verifikasi dengan curl
+```
+
+**File penting:**
+
+| File | Isi |
+|---|---|
+| `/etc/apache2/sites-available/<site>.conf` | Config vhost (draft) |
+| `/etc/apache2/sites-enabled/<site>.conf` | Symlink config aktif |
+| `/var/www/<domain>/index.html` | Homepage |
+| `/etc/hosts` | DNS lokal |
+| `/var/log/apache2/error.log` | Log error |
+| `/var/log/apache2/access.log` | Log akses |
+
+**Tips:**
+- `/etc/hosts` untuk testing local tanpa DNS.
+- `reload` lebih halus dari `restart`.
+- `chown -R www-data:www-data /var/www/<domain>` untuk permission.
+- Selalu `apache2ctl configtest` sebelum reload.
+- Halaman default Apache ada di `/var/www/html/` — bisa dinonaktifkan dengan `a2dissite 000-default.conf`.
+
+---
+
 # BAGIAN 9 — PANDUAN UPDATE
 
 ## 9.1 Cara Nambah Section
 
 **Setiap selesai 1 lab baru, cukup 3 langkah:**
 
-1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.5`, `8.6` — tidak perlu renumber yang lama.
+1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.6`, `8.7` — tidak perlu renumber yang lama.
 2. **Update tabel Progress** di atas.
 3. **Tambah baris** di Changelog.
 
@@ -1183,6 +1265,7 @@ network:
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-10 | Tambah 8.5 Apache Virtual Host (Lab 15.2) |
 | 2026-10-10 | Tambah 8.4 Static Configuration (Lab 15.1) |
 | 2026-10-10 | Tambah 8.2 Network Device & 8.3 Name Resolution (Lab 15.0) |
 | 2026-10-10 | Tambah 8.1 Hostname (Lab 14.1) |
@@ -1242,3 +1325,4 @@ network:
 - **8.2:** Lab 15.0 (Network Device & ip)
 - **8.3:** Lab 15.0 (Name Resolution & Diagnostics)
 - **8.4:** Lab 15.1 (Static Configuration / Netplan)
+- **8.5:** Lab 15.2 (Apache Virtual Host)
