@@ -1,9 +1,9 @@
 # Linux SysAdmin Cheatsheet
 
 **Catatan belajar Linux System Administration**
-Dari kursus Adinusa (Lab 3.x – 13.x) + praktik pribadi.
+Dari kursus Adinusa (Lab 3.x – 14.x) + praktik pribadi.
 
-> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security. Bagian 7 = referensi cepat.
+> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security. Bagian 7 = referensi cepat. Bagian 8 = networking.
 
 > **Penanda:** `[OK]` aman · `[!]` hati-hati · `[X]` bahaya
 
@@ -21,9 +21,9 @@ Dari kursus Adinusa (Lab 3.x – 13.x) + praktik pribadi.
 | Filesystem & Links | 8.1 – 8.3 | Selesai |
 | User & Security | 11.1, 12.0 – 12.5 | Selesai |
 | Permissions | 13.0 – 13.6 | Selesai |
-| — | 13.4+ | Belum |
+| Networking | 14.0 – 14.1 | Selesai |
 
-**Terakhir update:** 2026-10-XX (Lab 13.3 ACL)
+**Terakhir update:** 2026-10-10 (Lab 14.1 Hostname)
 
 ---
 
@@ -67,8 +67,9 @@ Dari kursus Adinusa (Lab 3.x – 13.x) + praktik pribadi.
 - [6.1 chmod Symbolic](#61-chmod--symbolic-mode)
 - [6.2 chmod Octal](#62-chmod--numeric-mode-octal)
 - [6.3 ACL](#63-acl-access-control-list)
-- [6.4 chown & chgrp](#64-chown--chgrp) *(planned)*
-- [6.5 Special Permissions](#65-special-permissions-suid-sgid-sticky) *(planned)*
+- [6.4 chown & chgrp](#64-chown--chgrp)
+- [6.5 Special Permissions](#65-special-permissions-suid-sgid-sticky)
+- [6.6 File Attributes](#66-file-attributes-chattr--lsattr)
 
 **Referensi Cepat**
 - [7.1 Perbedaan Penting](#71-perbedaan-penting)
@@ -78,15 +79,21 @@ Dari kursus Adinusa (Lab 3.x – 13.x) + praktik pribadi.
 - [7.5 Glosarium](#75-glosarium)
 - [7.6 Kalau Panic](#76-kalau-panic)
 
+**Networking**
+- [8.0 IP Address](#80-ip-address--konsep-dasar)
+- [8.1 Hostname](#81-hostname)
+
 **Panduan Update**
-- [8.1 Cara Nambah Section](#81-cara-nambah-section)
-- [8.2 Changelog](#82-changelog)
+- [9.1 Cara Nambah Section](#91-cara-nambah-section)
+- [9.2 Changelog](#92-changelog)
 
 ---
 
 # BAGIAN 1 — FONDASI
 
 ## 1.1 Navigasi Direktori
+
+**Kapan dipakai:** Setiap saat. Ini GPS-nya Linux.
 
 | Perintah | Fungsi |
 |---|---|
@@ -183,6 +190,8 @@ $ cd lab5 && pwd
 
 ## 2.1 Pipe, Filter & Hitung
 
+**Konsep:** Pipe (`|`) menghubungkan output satu perintah ke input perintah lain.
+
 | Perintah | Fungsi |
 |---|---|
 | `cmd1 \| cmd2` | Output cmd1 ke cmd2 |
@@ -242,6 +251,8 @@ $ du -ah ~ | sort -h | tail -20
 # BAGIAN 3 — SISTEM & PROSES
 
 ## 3.1 Resource Limits (ulimit)
+
+**Konsep:** Linux membatasi resource per user — mencegah satu user menghabiskan resource sistem.
 
 | Perintah | Fungsi |
 |---|---|
@@ -318,6 +329,8 @@ $ pgrep -af killing           # atau pakai pgrep
 
 ## 4.1 Package Management (APT)
 
+**Konsep:** APT = cara install/uninstall software di Debian/Ubuntu.
+
 | Perintah | Fungsi |
 |---|---|
 | `sudo apt update` | Refresh daftar paket |
@@ -351,6 +364,8 @@ $ pgrep -af killing           # atau pakai pgrep
 
 ## 4.3 Swap File
 
+**Konsep:** Swap = "memori cadangan" di disk saat RAM penuh.
+
 | Perintah | Fungsi |
 |---|---|
 | `fallocate -l 2G /swapfile` | Buat file swap |
@@ -373,7 +388,9 @@ $ pgrep -af killing           # atau pakai pgrep
 
 ## 4.4 Disk Usage (df & du)
 
-| Perintah | Fungsi | Sumber |
+**Perbedaan kunci:**
+
+| Perintah | Menjawab | Sumber |
 |---|---|---|
 | `df -h` | Sisa disk | Superblock (cepat) |
 | `df -Th` | + tipe filesystem | Superblock |
@@ -410,6 +427,8 @@ $ pgrep -af killing           # atau pakai pgrep
 
 ## 4.6 LVM (Logical Volume Manager)
 
+**Konsep:** LVM = "partisi virtual" yang bisa di-resize tanpa reboot.
+
 **Alur:** `partisi → pvcreate → vgcreate → lvcreate → mkfs → mount → fstab`
 
 | Perintah | Fungsi |
@@ -436,6 +455,8 @@ $ pgrep -af killing           # atau pakai pgrep
 # BAGIAN 5 — USER & SECURITY
 
 ## 5.1 Inode & Links
+
+**Konsep:** Inode = "KTP" file. Nama file hanya label yang menunjuk inode.
 
 | Perintah | Fungsi |
 |---|---|
@@ -520,6 +541,8 @@ PASS_WARN_AGE   7
 
 ## 5.4 Restricted User & Access Control
 
+**Kapan dipakai:** Guest account, akun demo, akun untuk otomasi terbatas.
+
 ```bash
 # 1. Buat user
 useradd -m -s /bin/bash <user> && passwd <user>
@@ -560,6 +583,8 @@ echo "-:limited<user>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 ---
 
 ## 5.5 SSH & SSH Key Authentication
+
+**Konsep:** SSH = akses remote aman. Key-based auth = login tanpa password.
 
 | Perintah | Fungsi |
 |---|---|
@@ -612,6 +637,8 @@ echo "-:limited<user>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 
 ## 6.1 chmod — Symbolic Mode
 
+**Konsep:** `chmod` mengubah permission file. Symbolic mode pakai huruf + operator.
+
 | Simbol | Arti |
 |---|---|
 | `u` / `g` / `o` / `a` | User / Group / Others / All |
@@ -642,6 +669,8 @@ $ chmod ug-rwx,o-rw file      # hapus
 
 ## 6.2 chmod — Numeric Mode (Octal)
 
+**Konversi:** `r=4` · `w=2` · `x=1`
+
 | r | w | x | Angka |
 |---|---|---|---|
 | ✓ | ✓ | ✓ | 7 |
@@ -666,6 +695,8 @@ $ chmod ug-rwx,o-rw file      # hapus
 ---
 
 ## 6.3 ACL (Access Control List)
+
+**Konsep:** Permission tambahan di luar user/group/others. Untuk akses ke user spesifik.
 
 **Tanda file punya ACL:** `+` di `ls -l`
 
@@ -696,15 +727,58 @@ other::---         ← others
 
 ## 6.4 chown & chgrp
 
-> **Status:** Planned (belum dipelajari di lab).
-> **Preview:** `chown user:group file` — ubah owner & group. Hanya root.
+| Perintah | Fungsi |
+|---|---|
+| `chown user file` | Ubah owner |
+| `chown user:group file` | Ubah owner & group |
+| `chown -R user:group dir/` | Rekursif |
+| `chgrp group file` | Ubah group saja |
+
+> **Catatan:** Hanya root yang bisa `chown`. `chgrp` bisa oleh root atau anggota group.
 
 ---
 
 ## 6.5 Special Permissions (SUID, SGID, Sticky)
 
-> **Status:** Planned.
-> **Preview:** `s` (SUID/SGID) dan `t` (sticky) di `ls -l`. Contoh: `/usr/bin/passwd` punya SUID.
+| Simbol | Nama | Efek |
+|---|---|---|
+| `s` (user) | SUID | Jalankan executable sebagai owner |
+| `s` (group) | SGID | Jalankan sebagai group / direktori warisi group |
+| `t` (others) | Sticky bit | Hanya owner bisa hapus file di direktori |
+
+**Set:**
+
+```bash
+$ chmod u+s file      # SUID
+$ chmod g+s file      # SGID
+$ chmod +t dir/       # Sticky bit
+$ chmod 4755 file     # SUID (numeric)
+$ chmod 2755 file     # SGID (numeric)
+$ chmod 1777 dir/     # Sticky (numeric)
+```
+
+**Contoh:** `/usr/bin/passwd` punya SUID (`-rwsr-xr-x`) — user biasa bisa ubah password.
+
+---
+
+## 6.6 File Attributes (chattr & lsattr)
+
+**Konsep:** Atribut khusus — bahkan root tidak bisa bypass.
+
+| Atribut | Simbol | Efek |
+|---|---|---|
+| Immutable | `i` | Tidak bisa diubah/dihapus — bahkan root |
+| Append-only | `a` | Hanya bisa ditambah |
+
+| Perintah | Fungsi |
+|---|---|
+| `lsattr file` | Lihat atribut |
+| `chattr +i file` | Set immutable |
+| `chattr -i file` | Hapus immutable |
+| `chattr +a file` | Set append-only |
+| `chattr -a file` | Hapus append-only |
+
+> [!] Jangan lupa `chattr -i` sebelum menghapus file immutable.
 
 ---
 
@@ -722,6 +796,7 @@ other::---         ← others
 | `usermod -G` vs `-aG` | Overwrite vs append |
 | Hard link vs symlink | Inode vs path |
 | `=` vs `+` vs `-` (chmod) | Reset vs tambah vs hapus |
+| `r` vs `rX` (ACL) | Read-only vs read + execute kondisional |
 
 ---
 
@@ -751,6 +826,7 @@ other::---         ← others
 | SSH gagal | Cek `~/.ssh` permission |
 | Load tinggi | `top`, bandingkan `nproc` |
 | Permission denied | `ls -l`, mungkin butuh `sudo` |
+| ACL tidak berlaku | Cek `mask` dengan `getfacl` |
 
 ---
 
@@ -776,20 +852,25 @@ other::---         ← others
 | **ACL** | Access Control List — permission granular |
 | **APT** | Package manager Debian/Ubuntu |
 | **Bash** | Shell default Linux |
+| **chattr** | Change attribute |
 | **chmod** | Change mode — ubah permission |
 | **chown** | Change owner |
 | **chgrp** | Change group |
+| **CIDR** | Classless Inter-Domain Routing |
 | **Cron** | Scheduler tugas berkala |
 | **Daemon** | Proses background |
 | **df** | Disk Free |
 | **du** | Disk Usage |
 | **ext4** | Filesystem default |
+| **FQDN** | Fully Qualified Domain Name |
 | **fstab** | File System Table |
 | **GECOS** | Comment di `/etc/passwd` |
 | **GID** | Group ID |
 | **GRUB** | Bootloader |
 | **Hard link** | Nama tambahan ke inode sama |
+| **Hostname** | Nama perangkat di jaringan |
 | **Inode** | Metadata file (bukan nama) |
+| **IPv4 / IPv6** | Versi IP address |
 | **Kernel** | Inti OS |
 | **Load average** | Antrean proses |
 | **LVM** | Logical Volume Manager |
@@ -797,6 +878,7 @@ other::---         ← others
 | **PAM** | Pluggable Auth Modules |
 | **Permission** | Hak akses |
 | **Pipe** | `\|` — sambung output |
+| **Private IP** | IP internal (10/8, 172.16/12, 192.168/16) |
 | **PV/VG/LV** | Physical/Volume/Logical (LVM) |
 | **rbash** | Restricted bash |
 | **Root** | Superuser |
@@ -836,9 +918,78 @@ other::---         ← others
 
 ---
 
-# BAGIAN 8 — PANDUAN UPDATE
+# BAGIAN 8 — NETWORKING
 
-## 8.1 Cara Nambah Section
+## 8.0 IP Address — Konsep Dasar
+
+**IPv4 vs IPv6:**
+
+| Aspek | IPv4 | IPv6 |
+|---|---|---|
+| Panjang | 32-bit | 128-bit |
+| Format | `192.168.1.1` | `2001:db8::1` |
+| Jumlah | ~4.3 miliar | ~3.4×10³⁸ |
+
+**Private IP:**
+
+| Range | Blok |
+|---|---|
+| `10.0.0.0 – 10.255.255.255` | `10/8` |
+| `172.16.0.0 – 172.31.255.255` | `172.16/12` |
+| `192.168.0.0 – 192.168.255.255` | `192.168/16` |
+
+**Reserved:**
+
+| Alamat | Fungsi |
+|---|---|
+| `127.0.0.1` | Loopback (IPv4) |
+| `::1` | Loopback (IPv6) |
+| `0.0.0.0` | Unknown / DHCP |
+| `255.255.255.255` | Broadcast |
+| `fe80::/10` | Link-local (IPv6) |
+
+**CIDR cheat sheet:**
+
+| CIDR | Netmask | Host |
+|---|---|---|
+| `/8` | `255.0.0.0` | 16 juta |
+| `/16` | `255.255.0.0` | 65.534 |
+| `/24` | `255.255.255.0` | 254 |
+| `/30` | `255.255.255.252` | 2 |
+
+**Hostname:**
+
+| Istilah | Contoh |
+|---|---|
+| Hostname | `academy` |
+| Domain | `adinusa.id` |
+| FQDN | `academy.adinusa.id` |
+
+---
+
+## 8.1 Hostname
+
+**Konsep:** Nama sistem di jaringan. Ada 3 tipe: static (permanen), transient (sementara), pretty (deskriptif).
+
+| Perintah | Fungsi |
+|---|---|
+| `hostname` | Lihat/set hostname (transient) |
+| `hostnamectl` | Lihat info hostname lengkap |
+| `hostnamectl set-hostname <nama>` | Set hostname permanent |
+| `hostname -f` | FQDN |
+| `cat /etc/hostname` | Hostname permanent |
+
+**Tips:**
+- `hostname` = sementara (hilang setelah reboot).
+- `hostnamectl set-hostname` = permanent.
+- Prompt shell tidak langsung berubah — logout-login ulang.
+- Hostname valid: huruf, angka, `-`, `.` saja.
+
+---
+
+# BAGIAN 9 — PANDUAN UPDATE
+
+## 9.1 Cara Nambah Section
 
 **Setiap selesai 1 lab baru, cukup 3 langkah:**
 
@@ -863,58 +1014,65 @@ other::---         ← others
 > [!] Catatan penting
 ```
 
-**Kalau butuh Bagian baru:** Kalau topik benar-benar beda (Networking, Docker, dll), buat Bagian 9, 10, dst. Tidak perlu reorganisasi.
+**Kalau butuh Bagian baru:** Kalau topik benar-benar beda (Docker, Kubernetes, dll), buat Bagian 10, 11, dst. Tidak perlu reorganisasi.
 
 ---
 
-## 8.2 Changelog
+## 9.2 Changelog
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-10 | Tambah 8.1 Hostname (Lab 14.1) |
+| 2026-10-10 | Tambah 8.0 IP Address teori (Lab 14.0) |
+| 2026-10-09 | Tambah 6.6 File Attributes (Lab 13.4) |
+| 2026-10-09 | Tambah quiz permissions (Lab 13.5) |
+| 2026-10-09 | Tambah quiz permissions & ownership (Lab 13.6) |
 | 2026-10-08 | Tambah 6.3 ACL (Lab 13.3) |
 | 2026-10-08 | Tambah 6.2 chmod Octal (Lab 13.2) |
 | 2026-10-08 | Tambah 6.1 chmod Symbolic (Lab 13.1) |
 | 2026-10-07 | Tambah Bagian 5 User & Security |
 | 2026-10-06 | Rombak struktur — encoding fix, TOC ringkas |
-| 2026-10-09 | Tambah 6.6 File Attributes (Lab 13.4) |
-| 2026-10-09 | Tambah quiz permissions (Lab 13.5) |
-| 2026-10-09 | Tambah quiz permissions & ownership (Lab 13.6) |
-| ... | ... |
 
 **Cara pakai:**
-- Setiap update, tambahkan **satu baris** di atas.
+- Setiap update, tambahkan **satu baris** di paling atas.
 - Format: `YYYY-MM-DD | Deskripsi singkat`.
-- Tidak perlu detail — cukup untuk lacak kapan dan apa.
 
 ---
 
-## Disclaimer
+## Catatan Pribadi & Disclaimer
 
-> Catatan ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa.
-> Materi asli tidak didistribusikan.
+> **Catatan pribadi:** Cheatsheet ini adalah rangkuman belajar pribadi dari kursus Linux System Administration di Adinusa. Ditulis ulang dengan bahasa sendiri sebagai sarana *self-reminder* dan portofolio.
+>
+> **Disclaimer:** Materi asli dari modul Adinusa **tidak didistribusikan** di repositori ini. Semua catatan di sini adalah hasil pemahaman pribadi, bukan salinan modul. Jika ada kesalahan, itu murni dari pemahaman saya sendiri — bukan dari materi Adinusa.
+>
+> **Untuk pembaca:** Kalau kamu menemukan cheatsheet ini bermanfaat, silakan belajar darinya. Tapi untuk pemahaman yang utuh, tetap ikuti kursus aslinya di Adinusa.
 
 ---
 
 ## Referensi Lab
 
-- **1.x:** Lab 3.1 – 3.4
-- **2.x:** Lab 3.3, 3.4
-- **3.1:** Lab 4.1 – 4.2
-- **3.2:** Lab 5.1
-- **3.3:** Lab 7.1
-- **4.1:** Lab 6.1
-- **4.2:** Lab 6.2
-- **4.3:** Lab 9.1
-- **4.4:** Lab 9.2
-- **4.5:** Lab 9.3
-- **4.6:** Lab 10.1
-- **5.1:** Lab 8.1 – 8.3
-- **5.2:** Lab 12.1, 12.5
-- **5.3:** Lab 12.3
-- **5.4:** Lab 12.2
-- **5.5:** Lab 12.4
-- **5.6:** Lab 11.1
-- **6.1:** Lab 13.1
-- **6.2:** Lab 13.2
-- **6.3:** Lab 13.3
-- **6.4, 6.5:** Planned
+- **1.x:** Lab 3.1 – 3.4 (File, Directory, Editor, Pipe)
+- **2.x:** Lab 3.3, 3.4 (Pipe, Wildcard)
+- **3.1:** Lab 4.1 – 4.2 (Resource Limits)
+- **3.2:** Lab 5.1 (Process Management)
+- **3.3:** Lab 7.1 (Monitoring)
+- **4.1:** Lab 6.1 (APT)
+- **4.2:** Lab 6.2 (External Repository)
+- **4.3:** Lab 9.1 (Swap)
+- **4.4:** Lab 9.2 (df/du)
+- **4.5:** Lab 9.3 (Partition)
+- **4.6:** Lab 10.1 (LVM)
+- **5.1:** Lab 8.1 – 8.3 (Inode, Hard Link, Symlink)
+- **5.2:** Lab 12.1, 12.5 (User & Group)
+- **5.3:** Lab 12.3 (Password Aging)
+- **5.4:** Lab 12.2 (Restricted User)
+- **5.5:** Lab 12.4 (SSH Key Auth)
+- **5.6:** Lab 11.1 (Kernel & Boot)
+- **6.1:** Lab 13.1 (Chmod Symbolic)
+- **6.2:** Lab 13.2 (Chmod Octal)
+- **6.3:** Lab 13.3 (ACL)
+- **6.4:** Lab 13.6 (Chown & Chgrp)
+- **6.5:** Lab 13.6 (SUID, SGID, Sticky)
+- **6.6:** Lab 13.4 (File Attributes)
+- **8.0:** Lab 14.0 (IP Address Teori)
+- **8.1:** Lab 14.1 (Hostname)
