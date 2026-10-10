@@ -31,7 +31,7 @@ $ nusactl login
 $ nusactl start linlab-013-6
 ```
 
-> **Catatan:** Ganti `<username>` dengan username Adinusa masing-masing.
+> **Catatan:** Ganti `USERNAME` dengan username Adinusa masing-masing.
 
 ---
 
@@ -39,20 +39,20 @@ $ nusactl start linlab-013-6
 
 ### Soal
 
-1. Ubah ownership `~/lab136/change_me` menjadi `<username>:student` secara **rekursif**.
+1. Ubah ownership `~/lab136/change_me` menjadi `USERNAME:student` secara **rekursif**.
 2. Tambahkan **hanya SGID bit** pada file `~/lab136/answer/perm` (tanpa mengubah permission lain).
 3. Hapus file `~/lab136/answer/garbage` (file ini mungkin memiliki atribut immutable).
 4. Set permission `~/lab136/answer/permissions.txt` menjadi:
    - Owner: `rwx`
    - Group: `r-x`
    - Others: `---`
-5. Tambahkan ACL pada `~/lab136/answer/acl_mnop.txt` sehingga user `<username>` memiliki akses **write**.
+5. Tambahkan ACL pada `~/lab136/answer/acl_mnop.txt` sehingga user `USERNAME` memiliki akses **write**.
 
 ### ✅ Solusi
 
 ```bash
 # 1. Ubah ownership rekursif
-$ sudo chown -R `<username>`:student ~/lab136/change_me
+$ sudo chown -R USERNAME:student ~/lab136/change_me
 
 # 2. Tambah SGID bit pada file perm (tanpa mengubah permission lain)
 $ sudo chmod g+s ~/lab136/answer/perm
@@ -65,12 +65,12 @@ $ sudo rm ~/lab136/answer/garbage
 $ sudo chmod 750 ~/lab136/answer/permissions.txt
 
 # 5. Tambah ACL write untuk user
-$ sudo setfacl -m u:'<username>':w ~/lab136/answer/acl_mnop.txt
+$ sudo setfacl -m u:USERNAME:w ~/lab136/answer/acl_mnop.txt
 ```
 
 ### 🔍 Penjelasan Opsi Penting
 
-**`chown -R <username>:student`**
+**`chown -R USERNAME:student`**
 - `-R` → rekursif ke seluruh isi direktori.
 - Format `user:group` → ubah owner dan group sekaligus.
 
@@ -90,9 +90,9 @@ $ sudo setfacl -m u:'<username>':w ~/lab136/answer/acl_mnop.txt
 - `5` → group: read + execute
 - `0` → others: tidak ada akses
 
-**`setfacl -m u:<username>:w`**
+**`setfacl -m u:USERNAME:w`**
 - `-m` → modify ACL
-- `u:<username>` → user target
+- `u:USERNAME` → user target
 - `w` → write permission (tanpa read/execute)
 
 ---
@@ -105,7 +105,7 @@ $ sudo setfacl -m u:'<username>':w ~/lab136/answer/acl_mnop.txt
 $ ls -lR ~/lab136/change_me | head
 ```
 
-Owner harus `<username>`, group `student`.
+Owner harus `USERNAME`, group `student`.
 
 ### 2. Cek SGID pada `perm`
 
@@ -139,7 +139,7 @@ $ getfacl ~/lab136/answer/acl_mnop.txt
 Output harus menampilkan:
 
 ```
-user:<username>:w-
+user:USERNAME:w-
 ```
 
 ---
@@ -158,7 +158,7 @@ user:<username>:w-
 
 - **`chown -R` gagal "Operation not permitted":** Hanya root yang bisa `chown`. Gunakan `sudo`.
 
-- **User `<username>` tidak ada:** Pastikan user sudah dibuat di sistem. Cek dengan `id <username>`.
+- **User `USERNAME` tidak ada:** Pastikan user sudah dibuat di sistem. Cek dengan `id USERNAME`.
 
 - **Permission `permissions.txt` salah:** Pastikan menggunakan **numeric mode** `750`, bukan symbolic. `750` = `rwxr-x---`.
 
