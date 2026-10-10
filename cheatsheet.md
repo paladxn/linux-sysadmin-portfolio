@@ -1,7 +1,7 @@
 # Linux SysAdmin Cheatsheet
 
 **Catatan belajar Linux System Administration**
-Dari kursus Adinusa (Lab 3.x – 14.x) + praktik pribadi.
+Dari kursus Adinusa (Lab 3.x – 15.x) + praktik pribadi.
 
 > **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security. Bagian 7 = referensi cepat. Bagian 8 = networking.
 
@@ -21,9 +21,9 @@ Dari kursus Adinusa (Lab 3.x – 14.x) + praktik pribadi.
 | Filesystem & Links | 8.1 – 8.3 | Selesai |
 | User & Security | 11.1, 12.0 – 12.5 | Selesai |
 | Permissions | 13.0 – 13.6 | Selesai |
-| Networking | 14.0 – 14.1 | Selesai |
+| Networking | 14.0 – 15.1 | Selesai |
 
-**Terakhir update:** 2026-10-10 (Lab 14.1 Hostname)
+**Terakhir update:** 2026-10-10 (Lab 15.1 Static Configuration)
 
 ---
 
@@ -82,6 +82,9 @@ Dari kursus Adinusa (Lab 3.x – 14.x) + praktik pribadi.
 **Networking**
 - [8.0 IP Address](#80-ip-address--konsep-dasar)
 - [8.1 Hostname](#81-hostname)
+- [8.2 Network Device & `ip` Command](#82-network-device--ip-command)
+- [8.3 Name Resolution & Diagnostics](#83-name-resolution--diagnostics)
+- [8.4 Static Configuration (Netplan)](#84-static-configuration-netplan)
 
 **Panduan Update**
 - [9.1 Cara Nambah Section](#91-cara-nambah-section)
@@ -797,6 +800,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Hard link vs symlink | Inode vs path |
 | `=` vs `+` vs `-` (chmod) | Reset vs tambah vs hapus |
 | `r` vs `rX` (ACL) | Read-only vs read + execute kondisional |
+| `ip` vs `ifconfig` | Modern vs legacy |
 
 ---
 
@@ -812,6 +816,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | [X] `mkfs` di partisi ter-mount | Hapus data |
 | [X] `chmod -R 777 /` | Rusak permission |
 | [X] `dd if=/dev/zero of=/dev/sda` | Wipe disk |
+| [X] Salah set default gateway | Putus koneksi network |
 
 ---
 
@@ -827,6 +832,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Load tinggi | `top`, bandingkan `nproc` |
 | Permission denied | `ls -l`, mungkin butuh `sudo` |
 | ACL tidak berlaku | Cek `mask` dengan `getfacl` |
+| Network tidak jalan | `ping 8.8.8.8` → `ip a` → `ip route` |
+| DNS tidak resolve | Cek `/etc/resolv.conf`, uji dengan `dig` |
 
 ---
 
@@ -842,6 +849,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 8. Test di VM sebelum produksi
 9. Jangan `chmod 777`
 10. Catat apa yang dilakukan
+11. YAML pakai **spasi**, bukan Tab
 
 ---
 
@@ -860,6 +868,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Cron** | Scheduler tugas berkala |
 | **Daemon** | Proses background |
 | **df** | Disk Free |
+| **dig** | DNS lookup tool |
+| **DNS** | Domain Name System |
 | **du** | Disk Usage |
 | **ext4** | Filesystem default |
 | **FQDN** | Fully Qualified Domain Name |
@@ -869,19 +879,27 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **GRUB** | Bootloader |
 | **Hard link** | Nama tambahan ke inode sama |
 | **Hostname** | Nama perangkat di jaringan |
+| **ifconfig** | Legacy network tool (deprecated) |
 | **Inode** | Metadata file (bukan nama) |
+| **ip** | Modern network tool |
 | **IPv4 / IPv6** | Versi IP address |
 | **Kernel** | Inti OS |
 | **Load average** | Antrean proses |
 | **LVM** | Logical Volume Manager |
+| **mtr** | Ping + traceroute real-time |
+| **Netplan** | Konfigurasi network Ubuntu (YAML) |
+| **NetworkManager** | Service network modern |
 | **OOM** | Out of Memory |
 | **PAM** | Pluggable Auth Modules |
 | **Permission** | Hak akses |
+| **ping** | Uji konektivitas |
 | **Pipe** | `\|` — sambung output |
+| **PNIDN** | Predictable Network Interface Device Names |
 | **Private IP** | IP internal (10/8, 172.16/12, 192.168/16) |
 | **PV/VG/LV** | Physical/Volume/Logical (LVM) |
 | **rbash** | Restricted bash |
 | **Root** | Superuser |
+| **Routing** | Pemilihan jalur paket |
 | **SELinux/AppArmor** | Mandatory access control |
 | **SGID** | Set Group ID |
 | **SIGTERM/SIGKILL** | Sinyal 15 / 9 |
@@ -892,6 +910,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Swap** | Memori cadangan |
 | **Symlink** | Shortcut |
 | **Systemd** | Init system |
+| **traceroute** | Lihat jalur paket |
 | **UID** | User ID |
 | **ulimit** | User limit |
 | **Umask** | Filter permission default |
@@ -913,6 +932,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Nano stuck | `CTRL + X` → `N` |
 | Terminal kacau | `reset` atau `stty sane` |
 | Lupa perintah | `man <cmd>` atau `--help` |
+| Network down | `ping 8.8.8.8` → cek `ip a` → `ip route` |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
@@ -987,13 +1007,154 @@ $ chmod 1777 dir/     # Sticky (numeric)
 
 ---
 
+## 8.2 Network Device & `ip` Command
+
+**Penamaan modern (PNIDN):**
+
+| Skema | Contoh |
+|---|---|
+| Onboard index | `eno1` |
+| PCI slot | `ens1` |
+| PCI bus/slot | `enp0s3`, `enp2s0` |
+| MAC address | `enx7837d1ea46da` |
+| Legacy | `eth0`, `wlan0` |
+
+**Kenapa PNIDN?** Nama lama (`eth0`, `eth1`) tidak deterministik — bisa tukar antar reboot. PNIDN pakai atribut hardware → stabil.
+
+**Perintah `ip`:**
+
+| Perintah | Fungsi |
+|---|---|
+| `ip a` | Lihat semua interface & IP |
+| `ip addr add <ip>/<prefix> dev <if>` | Assign IP |
+| `ip link set <if> up/down` | Nyalakan/matikan |
+| `ip route` | Lihat routing table |
+| `ip route add default via <gw>` | Tambah default gateway |
+| `ip monitor` | Pantau perubahan real-time |
+
+**`ip` vs `ifconfig`:**
+
+| Tugas | `ip` | `ifconfig` |
+|---|---|---|
+| Lihat | `ip a` | `ifconfig` |
+| Assign IP | `ip addr add ...` | `ifconfig ens3 10.5.5.10` |
+| Up | `ip link set up` | `ifconfig up` |
+| Set MTU | `ip link set mtu 1480` | `ifconfig mtu 1480` |
+
+> `ifconfig` deprecated — pakai `ip`. Kalau perlu `ifconfig`, install `net-tools`.
+
+**Routing table (contoh):**
+```
+default via 10.5.5.1 dev ens3 proto static
+10.5.5.0/24 dev ens3 proto kernel scope link src 10.5.5.10
+```
+
+- `default via ...` → default route, untuk traffic umum.
+- `10.5.5.0/24 dev ens3` → subnet langsung terhubung.
+
+---
+
+## 8.3 Name Resolution & Diagnostics
+
+**Name resolution** = hostname → IP.
+
+**Urutan:**
+1. `/etc/hosts` (static) → dicek **dulu**.
+2. DNS server (`/etc/resolv.conf`) → kalau tidak ada di hosts.
+
+**File penting:**
+
+| File | Fungsi |
+|---|---|
+| `/etc/hosts` | Static mapping (localhost, dll) |
+| `/etc/resolv.conf` | DNS server (`nameserver 8.8.8.8`) |
+
+**Tools DNS:**
+
+| Tool | Output |
+|---|---|
+| `dig adinusa.id` | Detail, modern |
+| `host adinusa.id` | Ringkas |
+| `nslookup adinusa.id` | Lama, deprecated |
+
+**Diagnostics:**
+
+| Tool | Fungsi |
+|---|---|
+| `ping -c3 host` | Uji konektivitas (RTT, packet loss) |
+| `traceroute host` | Lihat jalur paket (hop per hop) |
+| `mtr host` | Ping + traceroute real-time |
+| `dig domain` | Query DNS |
+
+**Alur troubleshooting network:**
+```
+1. ping 8.8.8.8        → internet jalan?
+2. ping google.com     → DNS jalan?
+3. ip a                → interface punya IP?
+4. ip route            → default gateway ada?
+5. dig google.com      → DNS resolve?
+6. traceroute          → di mana masalahnya?
+```
+
+---
+
+## 8.4 Static Configuration (Netplan)
+
+**Konsep:** Ubuntu modern pakai **Netplan** untuk konfigurasi network. File YAML di `/etc/netplan/`.
+
+**File contoh:**
+```yaml
+network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: true
+    enp0s9:
+      addresses:
+      - 172.17.10.10/24
+```
+
+**Perintah:**
+
+| Perintah | Fungsi |
+|---|---|
+| `sudo vim /etc/netplan/*.yaml` | Edit konfigurasi |
+| `sudo netplan apply` | Terapkan |
+| `sudo netplan try` | Coba + rollback otomatis kalau error |
+| `ip link show` | Lihat interface |
+| `ip link set <if> up` | Aktifkan interface |
+| `ip addr show <if>` | Lihat IP |
+| `ifconfig` | Legacy (butuh `net-tools`) |
+
+**Struktur YAML:**
+
+```yaml
+network:
+  version: 2
+  ethernets:
+    <interface>:
+      dhcp4: true|false
+      addresses: [IP/prefix]
+      gateway4: IP
+      nameservers:
+        addresses: [DNS]
+```
+
+**Tips:**
+- YAML **wajib pakai spasi**, bukan Tab.
+- `netplan try` aman untuk server remote — rollback kalau error.
+- Setelah apply, kadang perlu `ip link set up` manual.
+- DHCP vs Static: server produksi → static, laptop → DHCP.
+
+---
+
 # BAGIAN 9 — PANDUAN UPDATE
 
 ## 9.1 Cara Nambah Section
 
 **Setiap selesai 1 lab baru, cukup 3 langkah:**
 
-1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `6.6`, `6.7` — tidak perlu renumber yang lama.
+1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.5`, `8.6` — tidak perlu renumber yang lama.
 2. **Update tabel Progress** di atas.
 3. **Tambah baris** di Changelog.
 
@@ -1022,6 +1183,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-10 | Tambah 8.4 Static Configuration (Lab 15.1) |
+| 2026-10-10 | Tambah 8.2 Network Device & 8.3 Name Resolution (Lab 15.0) |
 | 2026-10-10 | Tambah 8.1 Hostname (Lab 14.1) |
 | 2026-10-10 | Tambah 8.0 IP Address teori (Lab 14.0) |
 | 2026-10-09 | Tambah 6.6 File Attributes (Lab 13.4) |
@@ -1076,3 +1239,6 @@ $ chmod 1777 dir/     # Sticky (numeric)
 - **6.6:** Lab 13.4 (File Attributes)
 - **8.0:** Lab 14.0 (IP Address Teori)
 - **8.1:** Lab 14.1 (Hostname)
+- **8.2:** Lab 15.0 (Network Device & ip)
+- **8.3:** Lab 15.0 (Name Resolution & Diagnostics)
+- **8.4:** Lab 15.1 (Static Configuration / Netplan)
