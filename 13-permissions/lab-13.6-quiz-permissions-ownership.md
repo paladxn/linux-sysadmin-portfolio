@@ -52,7 +52,7 @@ $ nusactl start linlab-013-6
 
 ```bash
 # 1. Ubah ownership rekursif
-$ sudo chown -R <username>:student ~/lab136/change_me
+$ sudo chown -R `<username>`:student ~/lab136/change_me
 
 # 2. Tambah SGID bit pada file perm (tanpa mengubah permission lain)
 $ sudo chmod g+s ~/lab136/answer/perm
