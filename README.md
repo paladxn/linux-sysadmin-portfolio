@@ -42,6 +42,8 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 13.4 | Managing File Attributes (`chattr` & `lsattr`) | ✅ | [Lihat](13-permissions/lab-13.4-file-attributes.md) |
 | 13.5 | Quiz: File Permissions, Ownership & ACLs | ✅ | [Lihat](13-permissions/lab-13.5-quiz-permissions.md) |
 | 13.6 | Quiz: File Permissions & Ownership | ✅ | [Lihat](13-permissions/lab-13.6-quiz-permissions-ownership.md) |
+| 14.0 | IP Address, Netmask & CIDR (Teori) | ✅ | [Lihat](14-networking/lab-14.0-ip-address-theory.md) |
+| 14.1 | Configure the Hostname | ✅ | [Lihat](14-networking/lab-14.1-hostname.md) |
 
 ## 📖 Referensi Cepat
 
