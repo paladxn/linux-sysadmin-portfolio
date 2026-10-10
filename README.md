@@ -46,6 +46,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 14.1 | Configure the Hostname | ✅ | [Lihat](14-networking/lab-14.1-hostname.md) |
 | 15.0 | Network Device, IP Command & Diagnostics (Teori) | ✅ | [Lihat](14-networking/lab-15.0-network-device-theory.md) |
 | 15.1 | Static Configuration (Netplan) | ✅ | [Lihat](14-networking/lab-15.1-static-configuration.md) |
+| 15.2 | Apache Custom Domain Configuration | ✅ | [Lihat](14-networking/lab-15.2-apache-custom-domain.md) |
 
 ## 📖 Referensi Cepat
 
