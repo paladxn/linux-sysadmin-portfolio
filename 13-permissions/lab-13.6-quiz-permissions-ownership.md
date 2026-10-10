@@ -65,7 +65,7 @@ $ sudo rm ~/lab136/answer/garbage
 $ sudo chmod 750 ~/lab136/answer/permissions.txt
 
 # 5. Tambah ACL write untuk user
-$ sudo setfacl -m u:<username>:w ~/lab136/answer/acl_mnop.txt
+$ sudo setfacl -m u:'<username>':w ~/lab136/answer/acl_mnop.txt
 ```
 
 ### 🔍 Penjelasan Opsi Penting
