@@ -44,6 +44,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 13.6 | Quiz: File Permissions & Ownership | ✅ | [Lihat](13-permissions/lab-13.6-quiz-permissions-ownership.md) |
 | 14.0 | IP Address, Netmask & CIDR (Teori) | ✅ | [Lihat](14-networking/lab-14.0-ip-address-theory.md) |
 | 14.1 | Configure the Hostname | ✅ | [Lihat](14-networking/lab-14.1-hostname.md) |
+| 15.1 | Static Configuration (Netplan) | ✅ | [Lihat](14-networking/lab-15.1-static-configuration.md) |
 
 ## 📖 Referensi Cepat
 
