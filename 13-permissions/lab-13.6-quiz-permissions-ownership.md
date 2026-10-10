@@ -26,7 +26,6 @@ Saya diminta menyelesaikan konfigurasi ownership, permission, dan ACL pada direk
 
 ## 🔧 Persiapan Lab
 
-```bash
 $ nusactl login
 $ nusactl start linlab-013-6
 
@@ -45,3 +44,9 @@ $ sudo chmod 750 ~/lab136/answer/permissions.txt
 
 # 5. Tambah ACL write untuk user
 $ sudo setfacl -m u:<username>:w ~/lab136/answer/acl_mnop.txt
+
+$ sudo chown -R :student ~/lab136/change_me
+# (harusnya: <username>:student)
+
+$ sudo setfacl -m u::w ~/lab136/answer/acl_mnop.txt
+# (harusnya: u:<username>:w)
