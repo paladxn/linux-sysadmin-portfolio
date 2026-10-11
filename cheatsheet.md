@@ -1,9 +1,9 @@
 # Linux SysAdmin Cheatsheet
 
 **Catatan belajar Linux System Administration**
-Dari kursus Adinusa (Lab 3.x – 15.x) + praktik pribadi.
+Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 
-> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security. Bagian 7 = referensi cepat. Bagian 8 = networking.
+> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security. Bagian 7 = referensi cepat. Bagian 8 = networking & web server.
 
 > **Penanda:** `[OK]` aman · `[!]` hati-hati · `[X]` bahaya
 
@@ -22,8 +22,9 @@ Dari kursus Adinusa (Lab 3.x – 15.x) + praktik pribadi.
 | User & Security | 11.1, 12.0 – 12.5 | Selesai |
 | Permissions | 13.0 – 13.6 | Selesai |
 | Networking | 14.0 – 15.2 | Selesai |
+| Web Security | 16.1 | Selesai |
 
-**Terakhir update:** 2026-10-10 (Lab 15.2 Apache Custom Domain)
+**Terakhir update:** 2026-10-11 (Lab 16.1 Apache HTTPS Self-Signed)
 
 ---
 
@@ -79,13 +80,14 @@ Dari kursus Adinusa (Lab 3.x – 15.x) + praktik pribadi.
 - [7.5 Glosarium](#75-glosarium)
 - [7.6 Kalau Panic](#76-kalau-panic)
 
-**Networking**
+**Networking & Web Server**
 - [8.0 IP Address](#80-ip-address--konsep-dasar)
 - [8.1 Hostname](#81-hostname)
 - [8.2 Network Device & `ip` Command](#82-network-device--ip-command)
 - [8.3 Name Resolution & Diagnostics](#83-name-resolution--diagnostics)
 - [8.4 Static Configuration (Netplan)](#84-static-configuration-netplan)
 - [8.5 Apache Virtual Host](#85-apache-virtual-host)
+- [8.6 Apache HTTPS (Self-Signed)](#86-apache-https-self-signed)
 
 **Panduan Update**
 - [9.1 Cara Nambah Section](#91-cara-nambah-section)
@@ -803,6 +805,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | `r` vs `rX` (ACL) | Read-only vs read + execute kondisional |
 | `ip` vs `ifconfig` | Modern vs legacy |
 | `reload` vs `restart` (service) | Baca ulang config vs matikan-nyalakan |
+| HTTP vs HTTPS | Port 80 vs 443, tanpa enkripsi vs dengan SSL/TLS |
+| Self-signed vs CA-signed | Warning di browser vs tanpa warning |
 
 ---
 
@@ -820,6 +824,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | [X] `dd if=/dev/zero of=/dev/sda` | Wipe disk |
 | [X] Salah set default gateway | Putus koneksi network |
 | [X] Edit vhost Apache tanpa `configtest` | Apache error |
+| [X] Bagikan private key SSL (`.key`) | Siapa pun bisa impersonate server |
+| [X] Lupa `-nodes` di openssl | Apache minta passphrase tiap restart |
 
 ---
 
@@ -838,6 +844,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Network tidak jalan | `ping 8.8.8.8` → `ip a` → `ip route` |
 | DNS tidak resolve | Cek `/etc/resolv.conf`, uji dengan `dig` |
 | Apache tidak jalan | `systemctl status apache2`, `apache2ctl configtest` |
+| HTTPS warning | Normal untuk self-signed; produksi pakai Let's Encrypt |
+| SSL handshake failed | Cek `mod_ssl` aktif, path cert benar |
 
 ---
 
@@ -855,6 +863,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 10. Catat apa yang dilakukan
 11. YAML pakai **spasi**, bukan Tab
 12. `apache2ctl configtest` sebelum reload Apache
+13. **Self-signed = testing**, produksi pakai **Let's Encrypt**
+14. Private key SSL **jangan pernah** dibagikan, permission `600`
 
 ---
 
@@ -865,14 +875,18 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **ACL** | Access Control List — permission granular |
 | **Apache** | Web server populer di Linux |
 | **a2ensite / a2dissite** | Enable/disable virtual host |
+| **a2enmod / a2dismod** | Enable/disable module Apache |
 | **APT** | Package manager Debian/Ubuntu |
 | **Bash** | Shell default Linux |
+| **CA** | Certificate Authority — penerbit certificate |
+| **Certificate** | File yang membuktikan identitas server |
 | **chattr** | Change attribute |
 | **chmod** | Change mode — ubah permission |
 | **chown** | Change owner |
 | **chgrp** | Change group |
 | **CIDR** | Classless Inter-Domain Routing |
 | **Cron** | Scheduler tugas berkala |
+| **CSR** | Certificate Signing Request |
 | **Daemon** | Proses background |
 | **df** | Disk Free |
 | **dig** | DNS lookup tool |
@@ -887,16 +901,20 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **GRUB** | Bootloader |
 | **Hard link** | Nama tambahan ke inode sama |
 | **Hostname** | Nama perangkat di jaringan |
+| **HTTPS** | HTTP + SSL/TLS (port 443) |
 | **ifconfig** | Legacy network tool (deprecated) |
 | **Inode** | Metadata file (bukan nama) |
 | **ip** | Modern network tool |
 | **IPv4 / IPv6** | Versi IP address |
 | **Kernel** | Inti OS |
+| **Let's Encrypt** | CA gratis, otomatis (Certbot) |
 | **Load average** | Antrean proses |
 | **LVM** | Logical Volume Manager |
+| **mod_ssl** | Modul Apache untuk SSL |
 | **mtr** | Ping + traceroute real-time |
 | **Netplan** | Konfigurasi network Ubuntu (YAML) |
 | **NetworkManager** | Service network modern |
+| **OpenSSL** | Tool untuk generate/manage certificate |
 | **OOM** | Out of Memory |
 | **PAM** | Pluggable Auth Modules |
 | **Permission** | Hak akses |
@@ -904,15 +922,18 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Pipe** | `\|` — sambung output |
 | **PNIDN** | Predictable Network Interface Device Names |
 | **Private IP** | IP internal (10/8, 172.16/12, 192.168/16) |
+| **Private key** | File rahasia SSL (`.key`, 600) |
 | **PV/VG/LV** | Physical/Volume/Logical (LVM) |
 | **rbash** | Restricted bash |
 | **reload / restart** | Baca ulang vs matikan-nyalakan service |
 | **Root** | Superuser |
 | **Routing** | Pemilihan jalur paket |
+| **Self-signed** | Certificate yang ditandatangani sendiri |
 | **SELinux/AppArmor** | Mandatory access control |
 | **SGID** | Set Group ID |
 | **SIGTERM/SIGKILL** | Sinyal 15 / 9 |
 | **SSH** | Secure Shell |
+| **SSL/TLS** | Protokol enkripsi untuk HTTPS |
 | **SUID** | Set User ID |
 | **Sticky bit** | Proteksi hapus di direktori |
 | **sudo** | Superuser Do |
@@ -945,12 +966,13 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Lupa perintah | `man <cmd>` atau `--help` |
 | Network down | `ping 8.8.8.8` → cek `ip a` → `ip route` |
 | Apache error | `apache2ctl configtest` → cek `/var/log/apache2/error.log` |
+| SSL error | Cek `a2enmod ssl`, path cert di vhost, permission `.key` |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
 ---
 
-# BAGIAN 8 — NETWORKING
+# BAGIAN 8 — NETWORKING & WEB SERVER
 
 ## 8.0 IP Address — Konsep Dasar
 
@@ -1230,13 +1252,139 @@ network:
 
 ---
 
+## 8.6 Apache HTTPS (Self-Signed)
+
+**Konsep:** HTTPS = HTTP + SSL/TLS. Data dienkripsi. Untuk **testing**, pakai **self-signed certificate** (ditandatangani sendiri, browser akan warning). Untuk produksi, pakai **Let's Encrypt**.
+
+**Perbedaan:**
+
+| Jenis Cert | Cocok untuk |
+|---|---|
+| **Self-signed** | Testing, dev, internal |
+| **Let's Encrypt** | Produksi (gratis, otomatis) |
+| **Commercial CA** | Produksi enterprise (berbayar) |
+
+**Port:** HTTP = 80, HTTPS = **443**.
+
+**Alur setup:**
+
+```bash
+# 1. Install Apache + OpenSSL
+sudo apt update
+sudo apt install apache2 openssl ssl-cert -y
+
+# 2. Enable modul SSL
+sudo a2enmod ssl
+
+# 3. Buat direktori cert
+sudo mkdir /etc/apache2/ssl
+
+# 4. Generate self-signed certificate (non-interaktif)
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /etc/apache2/ssl/USERNAME-adinusa.id.key \
+  -out /etc/apache2/ssl/USERNAME-adinusa.id.crt \
+  -subj "/C=ID/ST=Jawa Barat/L=Bogor/O=Personal/CN=USERNAME-adinusa.id"
+
+# 5. Buat vhost HTTPS
+sudo vim /etc/apache2/sites-available/USERNAME-adinusa.id-ssl.conf
+
+# 6. Enable + reload
+sudo a2ensite USERNAME-adinusa.id-ssl.conf
+sudo systemctl reload apache2
+sudo systemctl restart apache2
+
+# 7. Update /etc/hosts
+sudo vim /etc/hosts
+# Tambah: 127.0.0.1 USERNAME-adinusa.id www.USERNAME-adinusa.id
+
+# 8. Verifikasi
+curl -vk https://USERNAME-adinusa.id
+```
+
+**Penjelasan opsi `openssl req`:**
+
+| Opsi | Fungsi |
+|---|---|
+| `req` | Mulai proses CSR |
+| `-x509` | Output self-signed (bukan CSR) |
+| `-nodes` | Private key **tanpa** passphrase |
+| `-days 365` | Valid 365 hari |
+| `-newkey rsa:2048` | Generate key RSA 2048-bit |
+| `-keyout` | Path private key |
+| `-out` | Path certificate |
+| `-subj` | Subject non-interaktif |
+
+**Contoh config vhost HTTPS:**
+
+```apache
+<IfModule mod_ssl.c>
+  <VirtualHost *:443>
+    ServerName USERNAME-adinusa.id
+    ServerAlias www.USERNAME-adinusa.id
+    DocumentRoot /var/www/USERNAME-adinusa.id
+
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/ssl/USERNAME-adinusa.id.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/USERNAME-adinusa.id.key
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+  </VirtualHost>
+</IfModule>
+```
+
+**File penting:**
+
+| File | Perm | Isi |
+|---|---|---|
+| `/etc/apache2/ssl/<domain>.crt` | 644 | Certificate publik |
+| `/etc/apache2/ssl/<domain>.key` | 600 | Private key (rahasia) |
+| `/etc/apache2/sites-available/<domain>-ssl.conf` | 644 | Config vhost HTTPS |
+| `/etc/apache2/ports.conf` | 644 | `Listen 443` |
+
+**Cek certificate:**
+
+```bash
+# Info lengkap
+sudo openssl x509 -in /etc/apache2/ssl/<domain>.crt -noout -text
+
+# Tanggal expiry
+sudo openssl x509 -in /etc/apache2/ssl/<domain>.crt -noout -dates
+
+# Subject
+sudo openssl x509 -in /etc/apache2/ssl/<domain>.crt -noout -subject
+```
+
+**Tips:**
+- **`mod_ssl`** harus aktif (`a2enmod ssl`).
+- **Private key `.key`** permission `600`, owner root — **jangan dibagikan**.
+- **`-nodes`** = key tanpa passphrase (praktis server, tapi hati-hati).
+- **`-subj`** = isi subject non-interaktif (`/CN=domain`).
+- **Self-signed = testing**. Produksi pakai **Let's Encrypt** + Certbot.
+- `curl -k` untuk ignore warning certificate.
+- `curl -vk` untuk ignore + lihat detail SSL handshake.
+- **`reload` vs `restart`:** reload lebih halus, restart kalau perlu.
+
+**Redirect HTTP → HTTPS (opsional):**
+
+Tambahkan di vhost HTTP (`<domain>.conf`):
+
+```apache
+<VirtualHost *:80>
+    ServerName <domain>
+    Redirect permanent / https://<domain>/
+</VirtualHost>
+```
+
+---
+
 # BAGIAN 9 — PANDUAN UPDATE
 
 ## 9.1 Cara Nambah Section
 
 **Setiap selesai 1 lab baru, cukup 3 langkah:**
 
-1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.6`, `8.7` — tidak perlu renumber yang lama.
+1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.7`, `8.8` — tidak perlu renumber yang lama.
 2. **Update tabel Progress** di atas.
 3. **Tambah baris** di Changelog.
 
@@ -1265,6 +1413,7 @@ network:
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-11 | Tambah 8.6 Apache HTTPS Self-Signed (Lab 16.1) |
 | 2026-10-10 | Tambah 8.5 Apache Virtual Host (Lab 15.2) |
 | 2026-10-10 | Tambah 8.4 Static Configuration (Lab 15.1) |
 | 2026-10-10 | Tambah 8.2 Network Device & 8.3 Name Resolution (Lab 15.0) |
@@ -1326,3 +1475,4 @@ network:
 - **8.3:** Lab 15.0 (Name Resolution & Diagnostics)
 - **8.4:** Lab 15.1 (Static Configuration / Netplan)
 - **8.5:** Lab 15.2 (Apache Virtual Host)
+- **8.6:** Lab 16.1 (Apache HTTPS Self-Signed)
