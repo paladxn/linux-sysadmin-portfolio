@@ -22,9 +22,9 @@ Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 | User & Security | 11.1, 12.0 – 12.5 | Selesai |
 | Permissions | 13.0 – 13.6 | Selesai |
 | Networking | 14.0 – 15.2 | Selesai |
-| Web Security | 16.1 | Selesai |
+| Web Security | 16.1 – 16.2 | Selesai |
 
-**Terakhir update:** 2026-10-11 (Lab 16.1 Apache HTTPS Self-Signed)
+**Terakhir update:** 2026-10-11 (Lab 16.2 phpMyAdmin + Firewalld)
 
 ---
 
@@ -75,7 +75,7 @@ Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 **Referensi Cepat**
 - [7.1 Perbedaan Penting](#71-perbedaan-penting)
 - [7.2 Danger Zone](#72-danger-zone--perintah-berbahaya)
-- [7.3 Troubleshooting](#73-alur-troubleshooting-umum)
+- [7.3 Alur Troubleshooting](#73-alur-troubleshooting-umum)
 - [7.4 Best Practice](#74-best-practice)
 - [7.5 Glosarium](#75-glosarium)
 - [7.6 Kalau Panic](#76-kalau-panic)
@@ -88,6 +88,7 @@ Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 - [8.4 Static Configuration (Netplan)](#84-static-configuration-netplan)
 - [8.5 Apache Virtual Host](#85-apache-virtual-host)
 - [8.6 Apache HTTPS (Self-Signed)](#86-apache-https-self-signed)
+- [8.7 phpMyAdmin + Firewalld](#87-phpmyadmin--firewalld)
 
 **Panduan Update**
 - [9.1 Cara Nambah Section](#91-cara-nambah-section)
@@ -807,6 +808,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | `reload` vs `restart` (service) | Baca ulang config vs matikan-nyalakan |
 | HTTP vs HTTPS | Port 80 vs 443, tanpa enkripsi vs dengan SSL/TLS |
 | Self-signed vs CA-signed | Warning di browser vs tanpa warning |
+| Firewalld vs UFW | Zone-based vs rule-based |
+| phpMyAdmin vs CLI | GUI web vs terminal MySQL |
 
 ---
 
@@ -826,6 +829,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | [X] Edit vhost Apache tanpa `configtest` | Apache error |
 | [X] Bagikan private key SSL (`.key`) | Siapa pun bisa impersonate server |
 | [X] Lupa `-nodes` di openssl | Apache minta passphrase tiap restart |
+| [X] Buka phpMyAdmin ke publik tanpa firewall | Target utama attacker |
+| [X] `GRANT ALL PRIVILEGES ON *.* TO 'user'@'%'` di production | Akses penuh dari mana saja |
 
 ---
 
@@ -846,6 +851,10 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Apache tidak jalan | `systemctl status apache2`, `apache2ctl configtest` |
 | HTTPS warning | Normal untuk self-signed; produksi pakai Let's Encrypt |
 | SSL handshake failed | Cek `mod_ssl` aktif, path cert benar |
+| phpMyAdmin "Not Found" | Cek `a2query -s`, `Listen 8088` di ports.conf |
+| phpMyAdmin login gagal | Cek user MySQL, `SELECT user, host FROM mysql.user` |
+| Firewalld block akses | `firewall-cmd --list-all --zone=public` |
+| Firewalld memblok SSH | `firewall-cmd --add-service=ssh --permanent` |
 
 ---
 
@@ -865,6 +874,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 12. `apache2ctl configtest` sebelum reload Apache
 13. **Self-signed = testing**, produksi pakai **Let's Encrypt**
 14. Private key SSL **jangan pernah** dibagikan, permission `600`
+15. **phpMyAdmin di production publik = risiko** — batasi via firewall
+16. **Firewalld: `--permanent` + `--reload`** untuk commit perubahan
 
 ---
 
@@ -894,6 +905,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **DocumentRoot** | Direktori file web di Apache |
 | **du** | Disk Usage |
 | **ext4** | Filesystem default |
+| **Firewalld** | Firewall modern dengan konsep zone |
 | **FQDN** | Fully Qualified Domain Name |
 | **fstab** | File System Table |
 | **GECOS** | Comment di `/etc/passwd` |
@@ -907,10 +919,12 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **ip** | Modern network tool |
 | **IPv4 / IPv6** | Versi IP address |
 | **Kernel** | Inti OS |
+| **LAMP** | Linux + Apache + MySQL + PHP |
 | **Let's Encrypt** | CA gratis, otomatis (Certbot) |
 | **Load average** | Antrean proses |
 | **LVM** | Logical Volume Manager |
 | **mod_ssl** | Modul Apache untuk SSL |
+| **MySQL** | Database server populer |
 | **mtr** | Ping + traceroute real-time |
 | **Netplan** | Konfigurasi network Ubuntu (YAML) |
 | **NetworkManager** | Service network modern |
@@ -918,6 +932,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **OOM** | Out of Memory |
 | **PAM** | Pluggable Auth Modules |
 | **Permission** | Hak akses |
+| **PHP** | Bahasa pemrograman web |
+| **phpMyAdmin** | GUI web untuk MySQL/MariaDB |
 | **ping** | Uji konektivitas |
 | **Pipe** | `\|` — sambung output |
 | **PNIDN** | Predictable Network Interface Device Names |
@@ -941,6 +957,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Symlink** | Shortcut |
 | **Systemd** | Init system |
 | **traceroute** | Lihat jalur paket |
+| **UFW** | Uncomplicated Firewall (Ubuntu) |
 | **UID** | User ID |
 | **ulimit** | User limit |
 | **Umask** | Filter permission default |
@@ -948,6 +965,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **VirtualHost** | Konfigurasi domain di Apache |
 | **www-data** | User default Apache |
 | **Zombie** | Proses selesai belum di-reap |
+| **Zone (firewalld)** | Kumpulan aturan firewall (public, trusted, home, dll) |
 
 ---
 
@@ -967,6 +985,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Network down | `ping 8.8.8.8` → cek `ip a` → `ip route` |
 | Apache error | `apache2ctl configtest` → cek `/var/log/apache2/error.log` |
 | SSL error | Cek `a2enmod ssl`, path cert di vhost, permission `.key` |
+| phpMyAdmin error | Cek `ss -tlnp \| grep :8088`, `a2query -s`, `firewall-cmd --list-all` |
+| Firewalld block | `firewall-cmd --add-port=<port>/tcp --permanent && firewall-cmd --reload` |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
@@ -1378,13 +1398,194 @@ Tambahkan di vhost HTTP (`<domain>.conf`):
 
 ---
 
+## 8.7 phpMyAdmin + Firewalld
+
+**Konsep:** phpMyAdmin = GUI web untuk MySQL/MariaDB. Firewalld = firewall dengan konsep zone.
+
+**Stack LAMP:**
+
+| Komponen | Paket |
+|---|---|
+| Web server | `apache2` |
+| Database | `mysql-server` |
+| PHP | `php libapache2-mod-php php-mysql` |
+| Ekstensi PHP | `php-{mbstring,zip,gd,curl}` |
+| phpMyAdmin | `phpmyadmin` |
+| Firewall | `firewalld` |
+
+**Alur install lengkap:**
+
+```bash
+# 1. Update system
+sudo apt update -y && sudo apt upgrade -y
+
+# 2. Install Apache
+sudo apt install apache2 -y
+sudo systemctl enable --now apache2
+
+# 3. Install MySQL
+sudo apt install mysql-server -y
+sudo systemctl enable --now mysql
+
+# 4. Install PHP + ekstensi
+sudo apt install php libapache2-mod-php php-mysql -y
+sudo apt install php-{mbstring,zip,gd,curl} -y
+
+# 5. Install phpMyAdmin
+#    - Pilih: apache2
+#    - dbconfig-common: Yes
+#    - Isi password MySQL untuk phpmyadmin
+sudo apt install phpmyadmin -y
+
+# 6. Enable mbstring
+sudo phpenmod mbstring
+sudo systemctl restart apache2
+
+# 7. Buat user MySQL
+sudo mysql
+```
+
+Di prompt `mysql>`:
+
+```sql
+CREATE USER 'USERNAME'@'%' IDENTIFIED BY 'adinusa';
+GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+**Vhost phpMyAdmin di port 8088:**
+
+```bash
+sudo nano /etc/apache2/sites-available/phpmyadmin.conf
+```
+
+Isi:
+
+```apache
+<VirtualHost *:8088>
+    ServerAdmin admin@mydomain.local
+    ServerName phpmyadmin.mydomain.local
+    DocumentRoot /usr/share/phpmyadmin
+
+    <Directory /usr/share/phpmyadmin>
+        Options SymLinksIfOwnerMatch
+        DirectoryIndex index.php
+
+        <IfModule mod_php.c>
+            php_admin_value upload_tmp_dir /var/lib/phpmyadmin/tmp
+            php_admin_value open_basedir /usr/share/phpmyadmin/:/usr/share/doc/phpmyadmin/:/etc/phpmyadmin/:/var/lib/phpmyadmin/:/usr/share/php/:/usr/share/javascript/
+        </IfModule>
+    </Directory>
+
+    <Directory /usr/share/phpmyadmin/templates>
+        Require all denied
+    </Directory>
+    <Directory /usr/share/phpmyadmin/libraries>
+        Require all denied
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/phpmyadmin_error.log
+    CustomLog ${APACHE_LOG_DIR}/phpmyadmin_access.log combined
+</VirtualHost>
+```
+
+**Tambahkan `Listen 8088` di `/etc/apache2/ports.conf`:**
+
+```apache
+Listen 80
+Listen 8088
+
+<IfModule ssl_module>
+    Listen 443
+</IfModule>
+```
+
+**Enable site & reload:**
+
+```bash
+sudo a2ensite phpmyadmin
+sudo systemctl reload apache2
+```
+
+**Install & konfigurasi firewalld:**
+
+```bash
+# Install
+sudo apt install firewalld -y
+
+# Assign interface enp0s8 ke zone
+sudo firewall-cmd --add-interface=enp0s8 --permanent
+
+# Buka port 8088 di zone public
+sudo firewall-cmd --add-port=8088/tcp --zone=public --permanent
+
+# Reload
+sudo firewall-cmd --reload
+
+# Verifikasi
+sudo firewall-cmd --list-all --zone=public
+```
+
+**Akses phpMyAdmin:**
+
+```
+http://<IP-VM>:8088
+```
+
+Login dengan user MySQL yang dibuat.
+
+**Perintah firewalld penting:**
+
+| Perintah | Fungsi |
+|---|---|
+| `firewall-cmd --state` | Cek status firewalld |
+| `firewall-cmd --list-all --zone=public` | Lihat konfigurasi zone |
+| `firewall-cmd --add-interface=<if> --permanent` | Assign interface ke zone |
+| `firewall-cmd --add-port=<port>/tcp --zone=public --permanent` | Buka port |
+| `firewall-cmd --add-service=<service> --permanent` | Buka service (http, ssh, dll) |
+| `firewall-cmd --remove-port=<port>/tcp --permanent` | Tutup port |
+| `firewall-cmd --reload` | Reload konfigurasi |
+
+**Zone firewalld:**
+
+| Zone | Kepercayaan |
+|---|---|
+| `public` | Rendah — default untuk interface baru |
+| `trusted` | Tinggi — semua diizinkan |
+| `home` | Sedang — jaringan rumah |
+| `work` | Sedang — jaringan kantor |
+| `drop` | Block semua, no response |
+
+**File penting:**
+
+| File | Isi |
+|---|---|
+| `/etc/apache2/sites-available/phpmyadmin.conf` | Config vhost phpMyAdmin |
+| `/etc/apache2/ports.conf` | Port listening (`Listen 8088`) |
+| `/usr/share/phpmyadmin/` | File aplikasi phpMyAdmin |
+| `/etc/phpmyadmin/config.inc.php` | Config phpMyAdmin |
+| `/var/log/apache2/phpmyadmin_error.log` | Log error |
+
+**Tips:**
+- **phpMyAdmin di production = risiko** — batasi via firewall.
+- **Port custom (8088)** untuk isolasi dari web utama.
+- **`--permanent` + `--reload`** untuk commit perubahan firewalld.
+- MySQL root di Ubuntu pakai **auth_socket** → `sudo mysql`.
+- Akses via browser: `http://<IP-VM>:8088`.
+- `enp0s8` = interface host-only (lihat Lab 15.1).
+- `GRANT ALL PRIVILEGES ON *.*` hanya untuk lab — production batasi per database.
+- Pakai HTTPS untuk phpMyAdmin di production.
+
+---
+
 # BAGIAN 9 — PANDUAN UPDATE
 
 ## 9.1 Cara Nambah Section
 
 **Setiap selesai 1 lab baru, cukup 3 langkah:**
 
-1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.7`, `8.8` — tidak perlu renumber yang lama.
+1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.8`, `8.9` — tidak perlu renumber yang lama.
 2. **Update tabel Progress** di atas.
 3. **Tambah baris** di Changelog.
 
@@ -1413,6 +1614,7 @@ Tambahkan di vhost HTTP (`<domain>.conf`):
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-11 | Tambah 8.7 phpMyAdmin + Firewalld (Lab 16.2) |
 | 2026-10-11 | Tambah 8.6 Apache HTTPS Self-Signed (Lab 16.1) |
 | 2026-10-10 | Tambah 8.5 Apache Virtual Host (Lab 15.2) |
 | 2026-10-10 | Tambah 8.4 Static Configuration (Lab 15.1) |
@@ -1476,3 +1678,4 @@ Tambahkan di vhost HTTP (`<domain>.conf`):
 - **8.4:** Lab 15.1 (Static Configuration / Netplan)
 - **8.5:** Lab 15.2 (Apache Virtual Host)
 - **8.6:** Lab 16.1 (Apache HTTPS Self-Signed)
+- **8.7:** Lab 16.2 (phpMyAdmin + Firewalld)
