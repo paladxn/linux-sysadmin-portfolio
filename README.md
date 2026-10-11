@@ -47,6 +47,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 15.0 | Network Device, IP Command & Diagnostics (Teori) | ✅ | [Lihat](14-networking/lab-15.0-network-device-theory.md) |
 | 15.1 | Static Configuration (Netplan) | ✅ | [Lihat](14-networking/lab-15.1-static-configuration.md) |
 | 15.2 | Apache Custom Domain Configuration | ✅ | [Lihat](14-networking/lab-15.2-apache-custom-domain.md) |
+| 16.0 | Firewall, Firewalld & HTTPS (Teori) | ✅ | [Lihat](14-networking/lab-16.0-firewall-theory.md) |
 | 16.1 | Configure HTTPS Using Self-Signed Certificate | ✅ | [Lihat](14-networking/lab-16.1-apache-https-self-signed.md) |
 | 16.2 | Installing phpMyAdmin with Firewall Protection | ✅ | [Lihat](14-networking/lab-16.2-phpmyadmin-firewalld.md) |
 | 16.3 | Quiz: Securing Port Webserver (Nginx) | ✅ | [Lihat](14-networking/lab-16.3-nginx-custom-port.md) |
