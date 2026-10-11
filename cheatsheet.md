@@ -22,9 +22,9 @@ Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 | User & Security | 11.1, 12.0 – 12.5 | Selesai |
 | Permissions | 13.0 – 13.6 | Selesai |
 | Networking | 14.0 – 15.2 | Selesai |
-| Web Security | 16.1 – 16.2 | Selesai |
+| Web Security | 16.0 – 16.3 | Selesai |
 
-**Terakhir update:** 2026-10-11 (Lab 16.2 phpMyAdmin + Firewalld)
+**Terakhir update:** 2026-10-11 (Lab 16.3 Nginx Custom Port)
 
 ---
 
@@ -89,6 +89,8 @@ Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 - [8.5 Apache Virtual Host](#85-apache-virtual-host)
 - [8.6 Apache HTTPS (Self-Signed)](#86-apache-https-self-signed)
 - [8.7 phpMyAdmin + Firewalld](#87-phpmyadmin--firewalld)
+- [8.8 Nginx Custom Port](#88-nginx-custom-port--document-root)
+- [8.9 Firewalld & Zone (Teori)](#89-firewalld--zone-teori)
 
 **Panduan Update**
 - [9.1 Cara Nambah Section](#91-cara-nambah-section)
@@ -287,6 +289,8 @@ student    hard     nofile   3000
 
 > **Tips:** Kalau dapat error *"fork: Resource temporarily unavailable"*, cek `ulimit -u` dulu.
 
+> **Tips:** Kalau `ulimit -u` tidak bisa dinaikkan (`Operation not permitted`), cek `ulimit -Hu` — hard limit yang jadi batas atas. Bisa naikkan soft limit sampai setinggi hard limit.
+
 ---
 
 ## 3.2 Process Management
@@ -352,6 +356,8 @@ $ pgrep -af killing           # atau pakai pgrep
 
 > [!] `remove` sisa config · `purge` bersih total.
 
+> **Tips:** Kalau dapat error `dpkg was interrupted`, jalankan `sudo dpkg --configure -a`.
+
 ---
 
 ## 4.2 External Repository & Version Pinning
@@ -366,6 +372,8 @@ $ pgrep -af killing           # atau pakai pgrep
 | `lsb_release -cs` | Codename distro |
 
 > [!] Repo eksternal bisa bentrok. Cek `apt-cache policy` setelah tambah.
+
+> [!] Konflik MariaDB vs MySQL: `mysql-common` dari MariaDB tidak punya file `configure-symlinks` yang dibutuhkan MySQL Oracle. Hapus repo MariaDB dulu sebelum install MySQL.
 
 ---
 
@@ -810,6 +818,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Self-signed vs CA-signed | Warning di browser vs tanpa warning |
 | Firewalld vs UFW | Zone-based vs rule-based |
 | phpMyAdmin vs CLI | GUI web vs terminal MySQL |
+| Apache vs Nginx | Process-based vs event-driven |
+| Runtime vs Permanent (firewalld) | Sementara vs persistent |
 
 ---
 
@@ -831,6 +841,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | [X] Lupa `-nodes` di openssl | Apache minta passphrase tiap restart |
 | [X] Buka phpMyAdmin ke publik tanpa firewall | Target utama attacker |
 | [X] `GRANT ALL PRIVILEGES ON *.* TO 'user'@'%'` di production | Akses penuh dari mana saja |
+| [X] Edit config Nginx tanpa `nginx -t` | Nginx mati saat reload |
 
 ---
 
@@ -852,9 +863,12 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | HTTPS warning | Normal untuk self-signed; produksi pakai Let's Encrypt |
 | SSL handshake failed | Cek `mod_ssl` aktif, path cert benar |
 | phpMyAdmin "Not Found" | Cek `a2query -s`, `Listen 8088` di ports.conf |
-| phpMyAdmin login gagal | Cek user MySQL, `SELECT user, host FROM mysql.user` |
+| phpMyAdmin login gagal | Cek user MySQL, `SELECT user, host, plugin FROM mysql.user` |
 | Firewalld block akses | `firewall-cmd --list-all --zone=public` |
 | Firewalld memblok SSH | `firewall-cmd --add-service=ssh --permanent` |
+| Nginx tidak jalan | `nginx -t`, cek `journalctl -u nginx` |
+| `dpkg was interrupted` | `sudo dpkg --configure -a` |
+| Package konflik (MySQL/MariaDB) | Purge semua, hapus repo, install ulang |
 
 ---
 
@@ -876,6 +890,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 14. Private key SSL **jangan pernah** dibagikan, permission `600`
 15. **phpMyAdmin di production publik = risiko** — batasi via firewall
 16. **Firewalld: `--permanent` + `--reload`** untuk commit perubahan
+17. **`nginx -t`** sebelum reload Nginx
+18. **Pilih MySQL atau MariaDB**, jangan keduanya
 
 ---
 
@@ -902,7 +918,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **df** | Disk Free |
 | **dig** | DNS lookup tool |
 | **DNS** | Domain Name System |
-| **DocumentRoot** | Direktori file web di Apache |
+| **DocumentRoot** | Direktori file web |
 | **du** | Disk Usage |
 | **ext4** | Filesystem default |
 | **Firewalld** | Firewall modern dengan konsep zone |
@@ -925,9 +941,11 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **LVM** | Logical Volume Manager |
 | **mod_ssl** | Modul Apache untuk SSL |
 | **MySQL** | Database server populer |
+| **MariaDB** | Fork MySQL, kompatibel penuh |
 | **mtr** | Ping + traceroute real-time |
 | **Netplan** | Konfigurasi network Ubuntu (YAML) |
 | **NetworkManager** | Service network modern |
+| **Nginx** | Web server ringan, event-driven |
 | **OpenSSL** | Tool untuk generate/manage certificate |
 | **OOM** | Out of Memory |
 | **PAM** | Pluggable Auth Modules |
@@ -963,7 +981,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Umask** | Filter permission default |
 | **Vim** | Editor powerful |
 | **VirtualHost** | Konfigurasi domain di Apache |
-| **www-data** | User default Apache |
+| **www-data** | User default Apache/Nginx |
 | **Zombie** | Proses selesai belum di-reap |
 | **Zone (firewalld)** | Kumpulan aturan firewall (public, trusted, home, dll) |
 
@@ -976,7 +994,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Tidak boot | Rescue mode dari GRUB |
 | Lupa password root | Rescue → `passwd` |
 | Disk penuh | `df -h` → `du -sh /* \| sort -h` |
-| Fork error | `ulimit -u` |
+| Fork error | `ulimit -u` (bisa naikkan sampai `ulimit -Hu`) |
 | Command hang | `CTRL + C` |
 | Vim stuck | `Esc` → `:q!` |
 | Nano stuck | `CTRL + X` → `N` |
@@ -984,9 +1002,12 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Lupa perintah | `man <cmd>` atau `--help` |
 | Network down | `ping 8.8.8.8` → cek `ip a` → `ip route` |
 | Apache error | `apache2ctl configtest` → cek `/var/log/apache2/error.log` |
+| Nginx error | `nginx -t` → cek `/var/log/nginx/error.log` |
 | SSL error | Cek `a2enmod ssl`, path cert di vhost, permission `.key` |
 | phpMyAdmin error | Cek `ss -tlnp \| grep :8088`, `a2query -s`, `firewall-cmd --list-all` |
 | Firewalld block | `firewall-cmd --add-port=<port>/tcp --permanent && firewall-cmd --reload` |
+| `dpkg` interrupted | `sudo dpkg --configure -a` |
+| Service stuck | Kill proses, restart VM kalau perlu |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
@@ -1441,14 +1462,16 @@ sudo apt install phpmyadmin -y
 sudo phpenmod mbstring
 sudo systemctl restart apache2
 
-# 7. Buat user MySQL
+# 7. Buat user MySQL (kedua host — lihat tips)
 sudo mysql
 ```
 
 Di prompt `mysql>`:
 
 ```sql
-CREATE USER 'USERNAME'@'%' IDENTIFIED BY 'adinusa';
+CREATE USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+CREATE USER 'USERNAME'@'%' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'localhost' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 EXIT;
@@ -1533,8 +1556,6 @@ sudo firewall-cmd --list-all --zone=public
 http://<IP-VM>:8088
 ```
 
-Login dengan user MySQL yang dibuat.
-
 **Perintah firewalld penting:**
 
 | Perintah | Fungsi |
@@ -1547,35 +1568,130 @@ Login dengan user MySQL yang dibuat.
 | `firewall-cmd --remove-port=<port>/tcp --permanent` | Tutup port |
 | `firewall-cmd --reload` | Reload konfigurasi |
 
-**Zone firewalld:**
-
-| Zone | Kepercayaan |
-|---|---|
-| `public` | Rendah — default untuk interface baru |
-| `trusted` | Tinggi — semua diizinkan |
-| `home` | Sedang — jaringan rumah |
-| `work` | Sedang — jaringan kantor |
-| `drop` | Block semua, no response |
-
-**File penting:**
-
-| File | Isi |
-|---|---|
-| `/etc/apache2/sites-available/phpmyadmin.conf` | Config vhost phpMyAdmin |
-| `/etc/apache2/ports.conf` | Port listening (`Listen 8088`) |
-| `/usr/share/phpmyadmin/` | File aplikasi phpMyAdmin |
-| `/etc/phpmyadmin/config.inc.php` | Config phpMyAdmin |
-| `/var/log/apache2/phpmyadmin_error.log` | Log error |
-
 **Tips:**
 - **phpMyAdmin di production = risiko** — batasi via firewall.
 - **Port custom (8088)** untuk isolasi dari web utama.
 - **`--permanent` + `--reload`** untuk commit perubahan firewalld.
 - MySQL root di Ubuntu pakai **auth_socket** → `sudo mysql`.
-- Akses via browser: `http://<IP-VM>:8088`.
-- `enp0s8` = interface host-only (lihat Lab 15.1).
+- User `@'%'` **≠** user `@'localhost'` — buat keduanya untuk phpMyAdmin.
+- MySQL 8.0 pakai **`caching_sha2_password`** — tidak kompatibel dengan phpMyAdmin lama. Ubah ke **`mysql_native_password`**.
 - `GRANT ALL PRIVILEGES ON *.*` hanya untuk lab — production batasi per database.
-- Pakai HTTPS untuk phpMyAdmin di production.
+
+---
+
+## 8.8 Nginx Custom Port & Document Root
+
+**Konsep:** Nginx = web server ringan, event-driven. Alternatif Apache untuk static content & reverse proxy.
+
+**Apache vs Nginx:**
+
+| Aspek | Apache | Nginx |
+|---|---|---|
+| Model | Process-based | Event-driven |
+| Static | Bagus | Sangat bagus |
+| Memory | Lebih besar | Lebih kecil |
+| Config | vhost + `.htaccess` | Server block |
+
+**Alur install & config:**
+
+```bash
+# 1. Install
+sudo apt install nginx -y
+sudo systemctl enable --now nginx
+
+# 2. Buat document root
+sudo mkdir -p /opt/lab162
+sudo nano /opt/lab162/index.html
+# Isi: Hello Adinusa, I am USERNAME
+
+# 3. Edit config
+sudo nano /etc/nginx/sites-available/default
+```
+
+Config:
+
+```nginx
+server {
+    listen 8080 default_server;
+    listen [::]:8080 default_server;
+
+    root /opt/lab162;
+    index index.html;
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+
+```bash
+# 4. Test & reload
+sudo nginx -t
+sudo systemctl reload nginx
+
+# 5. Firewalld
+sudo firewall-cmd --add-port=8080/tcp --zone=public --permanent
+sudo firewall-cmd --reload
+
+# 6. Verifikasi
+curl http://localhost:8080
+```
+
+**File penting:**
+
+| File | Isi |
+|---|---|
+| `/etc/nginx/nginx.conf` | Config utama |
+| `/etc/nginx/sites-available/default` | Config site |
+| `/etc/nginx/sites-enabled/default` | Symlink aktif |
+| `/opt/lab162/index.html` | Homepage |
+| `/var/log/nginx/error.log` | Log error |
+
+**Tips:**
+- **`nginx -t`** wajib sebelum reload.
+- **Permission `www-data:www-data`** untuk file web.
+- **Port non-standard** mengurangi attack surface.
+- **Firewalld: `--permanent` + `--reload`** untuk commit.
+- Nginx cocok untuk **reverse proxy** (Node.js, Python, Go).
+
+---
+
+## 8.9 Firewalld & Zone (Teori)
+
+**Konsep:** Firewalld = firewall dinamis berbasis **zone**. Runtime vs Permanent config.
+
+**Zone** (dari ketat ke longgar):
+`drop` → `block` → `public` → `external` → `dmz` → `work` → `home` → `internal` → `trusted`
+
+**Perintah penting:**
+
+| Perintah | Fungsi |
+|---|---|
+| `firewall-cmd --state` | Cek status |
+| `firewall-cmd --get-active-zones` | Zone aktif |
+| `firewall-cmd --get-default-zone` | Zone default |
+| `firewall-cmd --get-zones` | Semua zone |
+| `firewall-cmd --zone=public --list-all` | Detail zone |
+| `firewall-cmd --zone=public --add-service=http --permanent` | Tambah service |
+| `firewall-cmd --zone=public --add-port=8080/tcp --permanent` | Buka port |
+| `firewall-cmd --reload` | Apply permanent |
+| `firewall-cmd --runtime-to-permanent` | Convert runtime ke permanent |
+
+**Runtime vs Permanent:**
+- Runtime → instant, hilang setelah reboot
+- Permanent → butuh `--reload` untuk apply
+
+**HTTPS:**
+- Port **443**
+- Service predefined `https` di firewalld
+- SSL obsolete → pakai **TLS 1.2/1.3**
+
+**Tips:**
+- Jangan jalankan `iptables` + `firewalld` bersamaan.
+- Edit config di `/etc/firewalld/`, bukan `/usr/lib/firewalld/`.
+- Pakai zone **paling ketat** yang masih fungsional.
 
 ---
 
@@ -1585,7 +1701,7 @@ Login dengan user MySQL yang dibuat.
 
 **Setiap selesai 1 lab baru, cukup 3 langkah:**
 
-1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.8`, `8.9` — tidak perlu renumber yang lama.
+1. **Tambah section** di Bagian yang sesuai. Nomor bebas, misal `8.10`, `8.11` — tidak perlu renumber yang lama.
 2. **Update tabel Progress** di atas.
 3. **Tambah baris** di Changelog.
 
@@ -1614,6 +1730,8 @@ Login dengan user MySQL yang dibuat.
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-11 | Tambah 8.9 Firewalld & Zone teori (Lab 16.0) |
+| 2026-10-11 | Tambah 8.8 Nginx Custom Port (Lab 16.3) |
 | 2026-10-11 | Tambah 8.7 phpMyAdmin + Firewalld (Lab 16.2) |
 | 2026-10-11 | Tambah 8.6 Apache HTTPS Self-Signed (Lab 16.1) |
 | 2026-10-10 | Tambah 8.5 Apache Virtual Host (Lab 15.2) |
@@ -1679,3 +1797,5 @@ Login dengan user MySQL yang dibuat.
 - **8.5:** Lab 15.2 (Apache Virtual Host)
 - **8.6:** Lab 16.1 (Apache HTTPS Self-Signed)
 - **8.7:** Lab 16.2 (phpMyAdmin + Firewalld)
+- **8.8:** Lab 16.3 (Nginx Custom Port)
+- **8.9:** Lab 16.0 (Firewalld & Zone Teori)
