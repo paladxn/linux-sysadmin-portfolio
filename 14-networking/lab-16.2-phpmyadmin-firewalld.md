@@ -137,17 +137,30 @@ $ sudo mysql
 Di dalam prompt `mysql>`:
 
 ```sql
-CREATE USER 'USERNAME'@'%' IDENTIFIED BY 'adinusa';
+-- Buat user untuk host '%' (remote) DAN 'localhost' (lokal)
+CREATE USER 'USERNAME'@'%' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+CREATE USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+
+-- Grant privilege
 GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'%' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'localhost' WITH GRANT OPTION;
+
+-- Refresh
 FLUSH PRIVILEGES;
+
+-- Verifikasi
+SELECT user, host, plugin FROM mysql.user WHERE user='USERNAME';
+
 EXIT;
 ```
 
 **Penjelasan:**
-- `'%'` → user bisa login dari mana saja (localhost, remote).
-- `GRANT ALL PRIVILEGES ON *.*` → akses penuh ke semua database.
+- `'%'` → user bisa login dari mana saja (remote).
+- `'localhost'` → user bisa login dari VM yang sama (untuk phpMyAdmin).
+- `mysql_native_password` → plugin kompatibel dengan phpMyAdmin.
 - `WITH GRANT OPTION` → bisa memberikan privilege ke user lain.
-- `FLUSH PRIVILEGES` → refresh tabel privilege MySQL.
+
+> **Penting:** User `@'%'` dan `@'localhost'` adalah **dua user berbeda** di MySQL. Untuk phpMyAdmin yang berjalan di VM yang sama, harus ada user `@'localhost'` juga.
 
 ### 8. Buat virtual host untuk phpMyAdmin
 
@@ -365,6 +378,125 @@ mysql> EXIT;
 
 ## 🐛 Troubleshooting & Kesalahan
 
+### Masalah Instalasi MySQL
+
+- **`mysql-common` dari MariaDB bentrok dengan `mysql-server-8.0`:**
+  Ini masalah klasik ketika **MariaDB sudah terinstall duluan** (dari Lab 6.2). Output error:
+  ```
+  /var/lib/dpkg/info/mysql-server-8.0.postinst: line 202: 
+  /usr/share/mysql-common/configure-symlinks: No such file or directory
+  ```
+  **Penyebab:** `mysql-common` yang terinstall berasal dari repo MariaDB (`1:10.11.19+maria~ubu2404`), bukan dari Ubuntu. File `configure-symlinks` **hanya ada** di paket `mysql-common` versi Oracle/Ubuntu. MariaDB dan MySQL **tidak bisa terinstall bersamaan**.
+
+  **Solusi lengkap:**
+  ```bash
+  # 1. Hentikan MariaDB
+  sudo systemctl stop mariadb
+  sudo systemctl disable mariadb
+
+  # 2. Purge semua paket MariaDB & MySQL
+  sudo apt purge -y 'mariadb*' 'mysql*'
+  sudo apt autoremove -y
+
+  # 3. Hapus sisa direktori
+  sudo rm -rf /etc/mysql /var/lib/mysql /var/log/mysql /usr/share/mysql-common
+
+  # 4. Hapus repo MariaDB
+  sudo rm -f /etc/apt/sources.list.d/mariadb.list
+  sudo rm -f /etc/apt/sources.list.d/mariadb.sources
+
+  # 5. Update & install ulang
+  sudo apt update
+  sudo apt install mysql-server -y
+
+  # 6. Verifikasi
+  sudo systemctl status mysql
+  ```
+
+- **APT selalu pilih `mysql-common` versi MariaDB:**
+  Cek dengan `apt-cache policy mysql-common`. Kalau candidate masih `1:10.11.x+maria`, berarti repo MariaDB masih aktif. Cek `/etc/apt/sources.list.d/` — kalau ada `mariadb.list` atau `mariadb.sources`, hapus.
+
+- **`NO_PUBKEY F1656F24C74CD1D8` dari repo MariaDB:**
+  GPG key MariaDB expired/hilang. Solusi paling cepat: hapus repo MariaDB kalau tidak dipakai. Atau tambah key ulang:
+  ```bash
+  sudo curl -LsS https://mariadb.org/mariadb_release_signing_key.pgp -o /etc/apt/keyrings/mariadb-keyring.pgp
+  ```
+
+### Masalah Login phpMyAdmin
+
+- **`Access denied for user 'USERNAME'@'localhost' (using password: YES)`:**
+  Penyebab paling umum: **plugin `caching_sha2_password`** (default MySQL 8.0) tidak kompatibel dengan phpMyAdmin versi Ubuntu 24.04. Cek dengan:
+  ```bash
+  sudo mysql -e "SELECT user, host, plugin FROM mysql.user WHERE user='USERNAME';"
+  ```
+  Kalau plugin-nya `caching_sha2_password`, ubah ke `mysql_native_password`:
+  ```sql
+  ALTER USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+  ALTER USER 'USERNAME'@'%' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+  FLUSH PRIVILEGES;
+  ```
+
+- **User `@'%'` tidak bisa login dari `localhost`:**
+  MySQL memperlakukan `'USERNAME'@'%'` dan `'USERNAME'@'localhost'` sebagai **dua user berbeda**. User `@'%'` tidak otomatis bisa login dari `localhost`. Solusi: buat **keduanya**:
+  ```sql
+  CREATE USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+  GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'localhost' WITH GRANT OPTION;
+  FLUSH PRIVILEGES;
+  ```
+
+- **Masih gagal login meskipun plugin sudah diubah:**
+  Kemungkinan password tidak ter-set dengan benar. Solusi paling bersih — **drop & buat ulang user**:
+  ```sql
+  DROP USER IF EXISTS 'USERNAME'@'localhost';
+  DROP USER IF EXISTS 'USERNAME'@'%';
+
+  CREATE USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+  CREATE USER 'USERNAME'@'%' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+
+  GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'localhost' WITH GRANT OPTION;
+  GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'%' WITH GRANT OPTION;
+
+  FLUSH PRIVILEGES;
+  ```
+
+- **Test login via CLI dulu sebelum phpMyAdmin:**
+  ```bash
+  mysql -u USERNAME -p
+  # Masukkan: adinusa
+  ```
+  Kalau berhasil masuk `mysql>`, berarti user OK — masalahnya di phpMyAdmin. Kalau gagal, user masih bermasalah.
+
+- **`Access denied for user 'root'@'localhost'`:**
+  Di Ubuntu, root MySQL pakai `auth_socket` — harus lewat `sudo mysql`, bukan `mysql -u root -p`.
+
+### Masalah Akses dari Windows
+
+- **Ping dari Windows ke VM timeout:**
+  Windows tidak punya IP di subnet yang sama dengan VM. Cek dengan `ipconfig` di Windows — cari adapter **VirtualBox Host-Only Network**. Harus punya IP di subnet `172.17.10.x` untuk bisa akses `enp0s9`.
+
+  Kalau tidak ada, set manual:
+  - Buka **Control Panel → Network and Internet → Network Connections** (`ncpa.cpl`)
+  - Klik kanan adapter VirtualBox Host-Only → Properties → IPv4 → Properties
+  - Set IP: `172.17.10.1`, Mask: `255.255.255.0`, Gateway: kosong
+
+- **Firewall Windows block akses:**
+  Test nonaktifkan sementara:
+  - **Windows Security → Firewall & network protection → Private network → Turn off**
+
+  Atau buat rule permanen (PowerShell sebagai Admin):
+  ```powershell
+  New-NetFirewallRule -DisplayName "VM HTTP" -Direction Inbound -LocalPort 80,8088 -Protocol TCP -Action Allow
+  ```
+
+- **Domain custom `USERNAME-adinusa.id` tidak resolve di Windows:**
+  Windows tidak mengenal domain itu. Tambahkan ke file `hosts` Windows:
+  1. Buka **Notepad sebagai Administrator**
+  2. Buka `C:\Windows\System32\drivers\etc\hosts`
+  3. Tambah baris: `172.17.10.10   USERNAME-adinusa.id   www.USERNAME-adinusa.id`
+  4. Simpan
+
+### Masalah Umum
+
 - **`phpmyadmin` tidak bisa diakses di browser:** Cek urutan:
   1. Apache jalan? `sudo systemctl status apache2`
   2. Listen di port 8088? `sudo ss -tlnp | grep :8088`
@@ -373,15 +505,6 @@ mysql> EXIT;
   5. Dari host, ping VM dulu: `ping 172.17.10.10`
 
 - **Error `Not Found` di browser:** DocumentRoot salah atau site belum di-enable. Cek `sudo apache2ctl -S`.
-
-- **Login gagal "Cannot log in to the MySQL server":** User MySQL belum dibuat atau password salah. Cek:
-  ```bash
-  sudo mysql
-  mysql> SELECT user, host FROM mysql.user;
-  ```
-  Kalau user belum ada, buat ulang. Kalau password salah, `ALTER USER`.
-
-- **`Access denied for user 'root'@'localhost'`:** Di Ubuntu, root MySQL pakai `auth_socket` — harus lewat `sudo mysql`, bukan `mysql -u root -p`.
 
 - **`The mbstring extension is missing`:** Jalankan `sudo phpenmod mbstring` lalu restart Apache.
 
@@ -393,7 +516,7 @@ mysql> EXIT;
   sudo systemctl enable --now firewalld
   ```
 
-- **Port 8088 tidak bisa diakses meskipun sudah dibuka:** Cek interface `enp0s8` benar-benar ada di zone public. Kalau tidak:
+- **Port 8088 tidak bisa diakses meskipun sudah dibuka:** Cek interface `enp0s8` benar-benar ada di zone public:
   ```bash
   sudo firewall-cmd --list-interfaces --zone=public
   ```
@@ -416,8 +539,6 @@ mysql> EXIT;
   sudo ss -tlnp | grep :8088
   ```
   Kalau ada, matikan proses itu atau ganti port.
-
-- **Akses via IP VM lain (bukan enp0s8):** Firewalld hanya mengizinkan akses via interface `enp0s8`. Kalau akses lewat interface lain, harus ditambahkan juga.
 
 ---
 
@@ -477,6 +598,31 @@ Firewalld memakai **zone** — kumpulan aturan. Zone umum:
 
 Untuk server yang butuh aturan kompleks, firewalld lebih fleksibel. Untuk pemakaian simpel, ufw cukup.
 
+### MySQL 8.0 vs MariaDB
+
+| Aspek | MySQL 8.0 | MariaDB 10.11 |
+|---|---|---|
+| Developer | Oracle | Komunitas |
+| Default plugin | `caching_sha2_password` | `mysql_native_password` |
+| Kompatibilitas phpMyAdmin | Butuh versi terbaru | Lebih kompatibel |
+| Ketersediaan di repo | Ubuntu main | Repo terpisah (MariaDB) |
+| Bisa terinstall bersamaan? | ❌ Tidak | ❌ Tidak |
+
+**Pelajaran penting:** Kalau mau MySQL 8.0, **jangan pernah** punya repo MariaDB aktif. Kalau tidak bisa hindari, pakai **MariaDB saja** — lebih kompatibel dengan phpMyAdmin di Ubuntu.
+
+### Plugin Autentikasi MySQL 8.0
+
+| Plugin | Keterangan |
+|---|---|
+| `caching_sha2_password` | Default MySQL 8.0 — **tidak kompatibel** dengan phpMyAdmin lama |
+| `mysql_native_password` | Legacy, kompatibel dengan semua client |
+| `sha256_password` | Alternatif, perlu SSL/TLS |
+
+**Kapan pakai mana:**
+- **Produksi modern:** `caching_sha2_password` (aman, tapi butuh client terbaru).
+- **Kompatibilitas:** `mysql_native_password` (untuk client lama).
+- **Lab / testing:** `mysql_native_password` — lebih sedikit masalah.
+
 ### Kapan Pakai phpMyAdmin?
 
 | Skenario | Pakai phpMyAdmin? |
@@ -520,7 +666,8 @@ Semua perubahan permanen pakai `--permanent`, baru `--reload`.
 4. **Backup rutin** — jangan andalkan phpMyAdmin saja.
 5. **Update rutin** — phpMyAdmin sering ada patch keamanan.
 6. **Batasi privilege user MySQL** — jangan semua user `ALL PRIVILEGES`.
-7. **Hapus user default** yang tidak dipakai.
+7. **Pakai `mysql_native_password`** kalau phpMyAdmin versi lama.
+8. **Hindari konflik MySQL vs MariaDB** — pilih salah satu.
 
 ### Pelajaran Kunci dari Lab Ini
 
@@ -531,6 +678,9 @@ Semua perubahan permanen pakai `--permanent`, baru `--reload`.
 5. **Interface assignment** = tentukan interface mana di-protect.
 6. **`--permanent` + `--reload`** = cara commit perubahan firewalld.
 7. **phpMyAdmin di production = risiko**, batasi aksesnya.
+8. **MySQL 8.0 + phpMyAdmin lama = konflik plugin** — pakai `mysql_native_password`.
+9. **User `@'%'` ≠ user `@'localhost'`** — buat keduanya untuk phpMyAdmin.
+10. **MariaDB dan MySQL tidak bisa coexist** — pilih salah satu.
 
 ---
 
@@ -545,13 +695,15 @@ Semua perubahan permanen pakai `--permanent`, baru `--reload`.
 | `sudo systemctl restart apache2` | Restart Apache |
 | `sudo systemctl enable --now apache2` | Enable + start Apache |
 | `sudo mysql` | Login MySQL sebagai root (auth_socket) |
+| `CREATE USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'pass'` | Buat user lokal |
+| `ALTER USER ... IDENTIFIED WITH mysql_native_password BY 'pass'` | Ubah plugin user |
+| `DROP USER IF EXISTS 'USERNAME'@'localhost'` | Hapus user |
 | `sudo a2ensite <site>` | Aktifkan vhost |
 | `sudo apt install firewalld` | Install firewalld |
 | `sudo firewall-cmd --add-interface=enp0s8 --permanent` | Assign interface ke zone |
 | `sudo firewall-cmd --add-port=8088/tcp --zone=public --permanent` | Buka port |
 | `sudo firewall-cmd --reload` | Reload konfigurasi |
 | `sudo firewall-cmd --list-all --zone=public` | Lihat konfigurasi zone |
-| `sudo firewall-cmd --state` | Cek status firewalld |
 
 **File penting:**
 
@@ -562,24 +714,30 @@ Semua perubahan permanen pakai `--permanent`, baru `--reload`.
 | `/usr/share/phpmyadmin/` | File aplikasi phpMyAdmin |
 | `/etc/phpmyadmin/config.inc.php` | Config phpMyAdmin |
 | `/var/log/apache2/phpmyadmin_error.log` | Log error phpMyAdmin |
+| `/etc/apt/sources.list.d/` | Repo tambahan (MariaDB, dll) |
 
 **Contoh query MySQL:**
 
 ```sql
--- Buat user
-CREATE USER 'USERNAME'@'%' IDENTIFIED BY 'adinusa';
+-- Buat user (kedua host)
+CREATE USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adinusa';
+CREATE USER 'USERNAME'@'%' IDENTIFIED WITH mysql_native_password BY 'adinusa';
 
 -- Grant privilege
+GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'localhost' WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'USERNAME'@'%' WITH GRANT OPTION;
 
 -- Refresh
 FLUSH PRIVILEGES;
 
--- Cek user
-SELECT user, host FROM mysql.user;
+-- Cek user & plugin
+SELECT user, host, plugin FROM mysql.user WHERE user='USERNAME';
+
+-- Ubah plugin
+ALTER USER 'USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY 'adinusa';
 
 -- Hapus user
-DROP USER 'USERNAME'@'%';
+DROP USER IF EXISTS 'USERNAME'@'localhost';
 ```
 
 ---
@@ -595,6 +753,6 @@ Lab ini memperkenalkan **phpMyAdmin** — GUI web untuk mengelola MySQL — deng
 
 Yang paling penting dipahami: **keamanan berlapis**. phpMyAdmin tidak cukup hanya diinstall — harus dibatasi aksesnya via firewall, dan idealnya pakai HTTPS di production. Firewalld memberikan kontrol granular mana interface yang boleh akses, port mana yang dibuka.
 
-Kemampuan ini sangat relevan di dunia kerja — hampir semua web app butuh database, dan phpMyAdmin adalah tool standar untuk management-nya. Firewalld juga wajib dipahami sysadmin yang mengelola server RHEL/CentOS/Fedora.
+Dari troubleshooting nyata, saya belajar bahwa **konflik dependency** (MySQL vs MariaDB) dan **plugin autentikasi** (`caching_sha2_password` vs `mysql_native_password`) adalah dua masalah paling umum yang akan dihadapi sysadmin di dunia kerja. Menguasai cara mengatasinya sangat berharga.
 
 > ⚠️ **Disclaimer:** Catatan ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa. Materi asli tidak didistribusikan.
