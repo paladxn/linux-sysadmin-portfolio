@@ -52,7 +52,9 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 16.2 | Installing phpMyAdmin with Firewall Protection | ✅ | [Lihat](14-networking/lab-16.2-phpmyadmin-firewalld.md) |
 | 16.3 | Quiz: Securing Port Webserver (Nginx) | ✅ | [Lihat](14-networking/lab-16.3-nginx-custom-port.md) |
 | 17.0 | System Startup & GRUB (Teori) | ✅ | [Lihat](11-kernel-boot/lab-17.0-system-startup-grub-theory.md) |
+| 18.0 | System Init: systemd, SysVinit & Upstart (Teori) | ✅ | [Lihat](18-systemd/lab-18.0-system-init-theory.md) |
 | 18.1 | Adding a New Startup Service with systemd | ✅ | [Lihat](18-systemd/lab-18.1-systemd-service.md) |
+
 
 ## 📖 Referensi Cepat
 
