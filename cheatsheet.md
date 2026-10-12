@@ -1,9 +1,9 @@
 # Linux SysAdmin Cheatsheet
 
 **Catatan belajar Linux System Administration**
-Dari kursus Adinusa (Lab 3.x – 18.x) + praktik pribadi.
+Dari kursus Adinusa (Lab 3.x – 19.x) + praktik pribadi.
 
-> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security & boot. Bagian 7 = referensi cepat. Bagian 8 = networking & web server.
+> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security & boot. Bagian 7 = referensi cepat & troubleshooting. Bagian 8 = networking & web server.
 
 > **Penanda:** `[OK]` aman · `[!]` hati-hati · `[X]` bahaya
 
@@ -23,9 +23,10 @@ Dari kursus Adinusa (Lab 3.x – 18.x) + praktik pribadi.
 | Permissions | 13.0 – 13.6 | Selesai |
 | Networking | 14.0 – 15.2 | Selesai |
 | Web Security | 16.0 – 16.3 | Selesai |
-| System Boot & systemd | 17.0, 18.1 | Selesai |
+| System Boot & systemd | 17.0, 18.0 – 18.1 | Selesai |
+| Troubleshooting | 19.0 – 19.1 | Selesai |
 
-**Terakhir update:** 2026-10-12 (Lab 18.1 systemd Service)
+**Terakhir update:** 2026-10-12 (Lab 19.1 Troubleshooting Apache)
 
 ---
 
@@ -75,13 +76,15 @@ Dari kursus Adinusa (Lab 3.x – 18.x) + praktik pribadi.
 - [6.5 Special Permissions](#65-special-permissions-suid-sgid-sticky)
 - [6.6 File Attributes](#66-file-attributes-chattr--lsattr)
 
-**Referensi Cepat**
+**Referensi Cepat & Troubleshooting**
 - [7.1 Perbedaan Penting](#71-perbedaan-penting)
 - [7.2 Danger Zone](#72-danger-zone--perintah-berbahaya)
-- [7.3 Alur Troubleshooting](#73-alur-troubleshooting-umum)
+- [7.3 Alur Troubleshooting Umum](#73-alur-troubleshooting-umum)
 - [7.4 Best Practice](#74-best-practice)
 - [7.5 Glosarium](#75-glosarium)
 - [7.6 Kalau Panic](#76-kalau-panic)
+- [7.7 Troubleshooting Apache](#77-troubleshooting-apache)
+- [7.8 Basic Troubleshooting (Teori)](#78-basic-troubleshooting-teori)
 
 **Networking & Web Server**
 - [8.0 IP Address](#80-ip-address--konsep-dasar)
@@ -910,7 +913,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 
 ---
 
-# BAGIAN 7 — REFERENSI CEPAT
+# BAGIAN 7 — REFERENSI CEPAT & TROUBLESHOOTING
 
 ## 7.1 Perbedaan Penting
 
@@ -1016,6 +1019,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 20. **`systemctl daemon-reload`** setelah edit unit file
 21. **Reboot ≠ fix masalah** — investigasi dulu
 22. **Backup unit file** sebelum ubah service
+23. **Ubah satu hal, test** — jangan ubah banyak sekaligus
+24. **Baca error log** dulu sebelum bertindak
 
 ---
 
@@ -1090,6 +1095,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **PV/VG/LV** | Physical/Volume/Logical (LVM) |
 | **rbash** | Restricted bash |
 | **reload / restart** | Baca ulang vs matikan-nyalakan service |
+| **Rescue mode** | Environment minimal untuk perbaikan darurat |
 | **Root** | Superuser |
 | **Routing** | Pemilihan jalur paket |
 | **Runlevel** | Level operasi SysVinit (0–6) |
@@ -1108,6 +1114,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **systemd** | Init + service manager modern |
 | **Target** | Pengganti runlevel di systemd |
 | **traceroute** | Lihat jalur paket |
+| **Troubleshooting** | Proses diagnosis & resolusi masalah |
 | **UEFI** | Firmware modern — pakai GPT |
 | **UFW** | Uncomplicated Firewall (Ubuntu) |
 | **UID** | User ID |
@@ -1147,6 +1154,103 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | GRUB error | Boot ke Live USB → `grub-install` + `update-grub` |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
+
+---
+
+## 7.7 Troubleshooting Apache
+
+**Alur investigasi:**
+
+```
+1. systemctl status apache2         → pesan error
+2. journalctl -u apache2 -n 50      → log systemd
+3. tail /var/log/apache2/error.log  → error spesifik
+4. apache2ctl configtest            → cek syntax
+5. ss -tlnp | grep :80              → cek port
+6. ls -la /var/www/html/            → cek file & perm
+7. grep -A 5 "<Directory /var/www/>" apache2.conf  → cek Require
+8. Fix → restart → curl verify
+```
+
+**Penyebab umum gagal start:**
+
+| Kategori | % | Contoh |
+|---|---|---|
+| Config error | 50% | Syntax salah, `;` hilang, direktif salah tempat |
+| Permission | 30% | www-data tidak bisa baca |
+| Port conflict | 20% | Nginx / proses lain |
+
+**403 Forbidden — cek:**
+
+- `Require all denied` di `<Directory /var/www/>` → ubah ke `granted`
+- `index.html` tidak ada
+- Permission: file `644`, dir `755`
+- Owner: `www-data:www-data`
+
+**Perintah penting:**
+
+| Perintah | Fungsi |
+|---|---|
+| `systemctl status apache2` | Cek status + error |
+| `journalctl -u apache2 -n 50` | Log systemd |
+| `apache2ctl configtest` | Validasi syntax |
+| `apache2ctl -S` | Ringkasan vhost |
+| `ss -tlnp \| grep :80` | Cek port |
+| `curl -v http://localhost` | Debug HTTP |
+| `sed -n 'X,Yp' apache2.conf` | Lihat baris config |
+| `grep -rn "pattern" /etc/apache2/` | Cari direktif |
+
+**Tips:**
+- **Jangan reinstall** — 99% bisa di-fix dengan config.
+- Error bisa **bertingkat** — fix satu, cek lagi.
+- Error code: 403 = forbidden, 404 = not found, 500 = server error.
+- `SSLEngine` hanya boleh di dalam `<VirtualHost *:443>`, bukan global config.
+
+---
+
+## 7.8 Basic Troubleshooting (Teori)
+
+**Resep 6 langkah:**
+
+```
+1. Characterize  → apa yang rusak, kapan mulai
+2. Reproduce     → bisa direproduksi?
+3. Easy first    → cek service, kabel, restart
+4. Eliminate     → satu per satu
+5. One change    → ubah satu hal, test
+6. Check logs    → /var/log/, journalctl
+```
+
+**Level troubleshooting:**
+- **Beginner** → ikut panduan
+- **Experienced** → paham "kenapa"
+- **Wizard** → debug kernel-level
+
+**Networking check (berurutan):**
+
+| # | Cek | Perintah |
+|---|---|---|
+| 1 | IP | `ip a` |
+| 2 | Driver | `lsmod`, `ls /sys/class/net/` |
+| 3 | Connectivity | `ping -c3 8.8.8.8` |
+| 4 | Routing | `ip route` |
+| 5 | DNS | `dig`, `cat /etc/resolv.conf` |
+
+**Boot failure:**
+
+| Tahap | Gejala | Solusi |
+|---|---|---|
+| BIOS/UEFI | Tidak POST | Cek BIOS setup |
+| GRUB | Tidak muncul menu | Live USB → `grub-install` |
+| Kernel | Kernel panic | GRUB `e`, boot kernel lama |
+| Root FS | Gagal mount / | Rescue mode, fix fstab |
+| systemd | Service error | Single-user, `journalctl -xb` |
+
+**Rescue Mode:**
+- Akses: GRUB → Advanced options → (recovery mode) → root
+- `mount -o remount,rw /` dulu sebelum edit
+- `fsck /dev/sdX` untuk repair FS
+- `journalctl -xb` untuk log
 
 ---
 
@@ -1867,6 +1971,8 @@ curl http://localhost:8080
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-12 | Tambah 7.8 Basic Troubleshooting teori (Lab 19.0) |
+| 2026-10-12 | Tambah 7.7 Troubleshooting Apache (Lab 19.1) |
 | 2026-10-12 | Tambah 5.8 systemd Service (Lab 18.1) |
 | 2026-10-12 | Tambah 5.7 System Startup & GRUB teori (Lab 17.0) |
 | 2026-10-11 | Tambah 8.9 Firewalld & Zone teori (Lab 16.0) |
@@ -1930,6 +2036,8 @@ curl http://localhost:8080
 - **6.4:** Lab 13.6 (Chown & Chgrp)
 - **6.5:** Lab 13.6 (SUID, SGID, Sticky)
 - **6.6:** Lab 13.4 (File Attributes)
+- **7.7:** Lab 19.1 (Troubleshooting Apache)
+- **7.8:** Lab 19.0 (Basic Troubleshooting Teori)
 - **8.0:** Lab 14.0 (IP Address Teori)
 - **8.1:** Lab 14.1 (Hostname)
 - **8.2:** Lab 15.0 (Network Device & ip)
