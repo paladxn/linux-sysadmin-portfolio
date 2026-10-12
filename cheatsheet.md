@@ -1,9 +1,9 @@
 # Linux SysAdmin Cheatsheet
 
 **Catatan belajar Linux System Administration**
-Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
+Dari kursus Adinusa (Lab 3.x – 18.x) + praktik pribadi.
 
-> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security. Bagian 7 = referensi cepat. Bagian 8 = networking & web server.
+> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security & boot. Bagian 7 = referensi cepat. Bagian 8 = networking & web server.
 
 > **Penanda:** `[OK]` aman · `[!]` hati-hati · `[X]` bahaya
 
@@ -23,8 +23,9 @@ Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 | Permissions | 13.0 – 13.6 | Selesai |
 | Networking | 14.0 – 15.2 | Selesai |
 | Web Security | 16.0 – 16.3 | Selesai |
+| System Boot & systemd | 17.0, 18.1 | Selesai |
 
-**Terakhir update:** 2026-10-11 (Lab 16.3 Nginx Custom Port)
+**Terakhir update:** 2026-10-12 (Lab 18.1 systemd Service)
 
 ---
 
@@ -63,6 +64,8 @@ Dari kursus Adinusa (Lab 3.x – 16.x) + praktik pribadi.
 - [5.4 Restricted User](#54-restricted-user--access-control)
 - [5.5 SSH](#55-ssh--ssh-key-authentication)
 - [5.6 Kernel & Boot](#56-kernel--boot)
+- [5.7 System Startup & GRUB (Teori)](#57-system-startup--grub-teori)
+- [5.8 systemd Service](#58-systemd-service)
 
 **Permissions**
 - [6.1 chmod Symbolic](#61-chmod--symbolic-mode)
@@ -648,6 +651,116 @@ echo "-:limited<user>:ALL EXCEPT LOCAL" >> /etc/security/access.conf
 
 ---
 
+## 5.7 System Startup & GRUB (Teori)
+
+**Boot Sequence:**
+```
+1. BIOS/UEFI (POST)
+2. Boot Loader (GRUB)
+3. Kernel Initialization
+4. Init/systemd
+```
+
+**BIOS vs UEFI:**
+
+| Aspek | BIOS | UEFI |
+|---|---|---|
+| Boot table | MBR | GPT |
+| Max disk | 2 TB | Sangat besar |
+| Secure Boot | ❌ | ✅ |
+
+**Shutdown & Reboot:**
+
+| Perintah | Fungsi |
+|---|---|
+| `sudo shutdown -h now` | Shutdown |
+| `sudo shutdown -r now` | Reboot |
+| `sudo shutdown -h +1 "msg"` | Shutdown dalam 1 menit |
+| `sudo shutdown -c` | Cancel |
+| `sudo reboot` / `halt` / `poweroff` | Legacy wrapper |
+
+**GRUB:**
+
+| File | Fungsi |
+|---|---|
+| `/etc/default/grub` | Config utama (edit di sini) |
+| `/boot/grub/grub.cfg` | Auto-generated (jangan edit) |
+| `/etc/grub.d/` | Script generator menu |
+
+**Regenerate GRUB:**
+```bash
+$ sudo update-grub                            # Debian/Ubuntu
+$ sudo grub2-mkconfig -o /boot/grub2/grub.cfg # RHEL/Fedora
+```
+
+**GRUB interaktif:**
+- `e` → edit entry sementara (tambah `single` untuk rescue)
+- `c` → GRUB shell
+- `Ctrl+X` / `F10` → boot dengan parameter baru
+
+**Tips:**
+- Jangan edit `grub.cfg` langsung.
+- Backup GRUB sebelum ubah: `cp /boot/grub/grub.cfg /boot/grub/grub.cfg.bak`
+- Single-user mode untuk reset password root.
+- Reboot tidak selalu fix masalah — investigasi dulu.
+
+---
+
+## 5.8 systemd Service
+
+**Konsep:** systemd = init + service manager modern. Unit file di `/etc/systemd/system/`.
+
+**3 section unit file:**
+
+```ini
+[Unit]
+Description=<nama>
+After=network.target
+
+[Service]
+ExecStart=<path-absolut-perintah>
+ExecStop=<path-absolut-perintah>
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Perintah `systemctl`:**
+
+| Perintah | Fungsi |
+|---|---|
+| `systemctl start <svc>` | Jalankan |
+| `systemctl stop <svc>` | Hentikan |
+| `systemctl restart <svc>` | Restart |
+| `systemctl status <svc>` | Cek status |
+| `systemctl enable <svc>` | Auto-start saat boot |
+| `systemctl disable <svc>` | Matikan auto-start |
+| `systemctl is-active <svc>` | Cek running |
+| `systemctl is-enabled <svc>` | Cek auto-start |
+| `systemctl daemon-reload` | Baca ulang unit file |
+| `systemctl mask <svc>` | Block service |
+| `systemctl edit <svc>` | Override service bawaan |
+| `journalctl -u <svc> -f` | Log real-time |
+
+**Target vs Runlevel:**
+
+| Runlevel | Target |
+|---|---|
+| 0 | poweroff.target |
+| 1 | rescue.target |
+| 3 | multi-user.target |
+| 5 | graphical.target |
+| 6 | reboot.target |
+
+**Tips:**
+- `daemon-reload` **wajib** setelah edit unit file.
+- `ExecStart` pakai **path absolut** (`/bin/echo`, bukan `echo`).
+- Service yang selesai cepat akan tampak `inactive` — normal.
+- `systemctl edit <svc>` untuk override tanpa edit file asli.
+- Cek log dengan `journalctl -u <svc>`.
+
+---
+
 # BAGIAN 6 — PERMISSIONS
 
 ## 6.1 chmod — Symbolic Mode
@@ -820,6 +933,9 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | phpMyAdmin vs CLI | GUI web vs terminal MySQL |
 | Apache vs Nginx | Process-based vs event-driven |
 | Runtime vs Permanent (firewalld) | Sementara vs persistent |
+| BIOS vs UEFI | Legacy vs modern firmware |
+| Runlevel vs Target | Nama lama vs systemd |
+| `start` vs `enable` | Jalankan sekarang vs auto-start saat boot |
 
 ---
 
@@ -842,6 +958,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | [X] Buka phpMyAdmin ke publik tanpa firewall | Target utama attacker |
 | [X] `GRANT ALL PRIVILEGES ON *.* TO 'user'@'%'` di production | Akses penuh dari mana saja |
 | [X] Edit config Nginx tanpa `nginx -t` | Nginx mati saat reload |
+| [X] Edit `grub.cfg` langsung | Perubahan hilang saat update-grub |
+| [X] Reboot server produksi tanpa alasan | Downtime tidak perlu |
 
 ---
 
@@ -869,6 +987,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Nginx tidak jalan | `nginx -t`, cek `journalctl -u nginx` |
 | `dpkg was interrupted` | `sudo dpkg --configure -a` |
 | Package konflik (MySQL/MariaDB) | Purge semua, hapus repo, install ulang |
+| Systemd service gagal | `systemctl status <svc>`, `journalctl -u <svc>` |
+| GRUB tidak muncul | Cek `/etc/default/grub`, `update-grub` |
 
 ---
 
@@ -892,6 +1012,10 @@ $ chmod 1777 dir/     # Sticky (numeric)
 16. **Firewalld: `--permanent` + `--reload`** untuk commit perubahan
 17. **`nginx -t`** sebelum reload Nginx
 18. **Pilih MySQL atau MariaDB**, jangan keduanya
+19. **Jangan edit `grub.cfg`** — edit `/etc/default/grub`
+20. **`systemctl daemon-reload`** setelah edit unit file
+21. **Reboot ≠ fix masalah** — investigasi dulu
+22. **Backup unit file** sebelum ubah service
 
 ---
 
@@ -905,6 +1029,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **a2enmod / a2dismod** | Enable/disable module Apache |
 | **APT** | Package manager Debian/Ubuntu |
 | **Bash** | Shell default Linux |
+| **BIOS** | Firmware legacy — pakai MBR |
 | **CA** | Certificate Authority — penerbit certificate |
 | **Certificate** | File yang membuktikan identitas server |
 | **chattr** | Change attribute |
@@ -915,18 +1040,20 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Cron** | Scheduler tugas berkala |
 | **CSR** | Certificate Signing Request |
 | **Daemon** | Proses background |
+| **daemon-reload** | Baca ulang unit file systemd |
 | **df** | Disk Free |
 | **dig** | DNS lookup tool |
 | **DNS** | Domain Name System |
 | **DocumentRoot** | Direktori file web |
 | **du** | Disk Usage |
+| **enable** | Auto-start service saat boot |
 | **ext4** | Filesystem default |
 | **Firewalld** | Firewall modern dengan konsep zone |
 | **FQDN** | Fully Qualified Domain Name |
 | **fstab** | File System Table |
 | **GECOS** | Comment di `/etc/passwd` |
 | **GID** | Group ID |
-| **GRUB** | Bootloader |
+| **GRUB** | Bootloader default Linux |
 | **Hard link** | Nama tambahan ke inode sama |
 | **Hostname** | Nama perangkat di jaringan |
 | **HTTPS** | HTTP + SSL/TLS (port 443) |
@@ -934,11 +1061,13 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Inode** | Metadata file (bukan nama) |
 | **ip** | Modern network tool |
 | **IPv4 / IPv6** | Versi IP address |
+| **journalctl** | Tool lihat log systemd |
 | **Kernel** | Inti OS |
 | **LAMP** | Linux + Apache + MySQL + PHP |
 | **Let's Encrypt** | CA gratis, otomatis (Certbot) |
 | **Load average** | Antrean proses |
 | **LVM** | Logical Volume Manager |
+| **MBR** | Master Boot Record — skema partisi lama |
 | **mod_ssl** | Modul Apache untuk SSL |
 | **MySQL** | Database server populer |
 | **MariaDB** | Fork MySQL, kompatibel penuh |
@@ -955,6 +1084,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **ping** | Uji konektivitas |
 | **Pipe** | `\|` — sambung output |
 | **PNIDN** | Predictable Network Interface Device Names |
+| **POST** | Power-On Self-Test |
 | **Private IP** | IP internal (10/8, 172.16/12, 192.168/16) |
 | **Private key** | File rahasia SSL (`.key`, 600) |
 | **PV/VG/LV** | Physical/Volume/Logical (LVM) |
@@ -962,6 +1092,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **reload / restart** | Baca ulang vs matikan-nyalakan service |
 | **Root** | Superuser |
 | **Routing** | Pemilihan jalur paket |
+| **Runlevel** | Level operasi SysVinit (0–6) |
 | **Self-signed** | Certificate yang ditandatangani sendiri |
 | **SELinux/AppArmor** | Mandatory access control |
 | **SGID** | Set Group ID |
@@ -973,12 +1104,16 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **sudo** | Superuser Do |
 | **Swap** | Memori cadangan |
 | **Symlink** | Shortcut |
-| **Systemd** | Init system |
+| **systemctl** | Perintah kontrol systemd |
+| **systemd** | Init + service manager modern |
+| **Target** | Pengganti runlevel di systemd |
 | **traceroute** | Lihat jalur paket |
+| **UEFI** | Firmware modern — pakai GPT |
 | **UFW** | Uncomplicated Firewall (Ubuntu) |
 | **UID** | User ID |
 | **ulimit** | User limit |
 | **Umask** | Filter permission default |
+| **unit file** | File definisi service systemd |
 | **Vim** | Editor powerful |
 | **VirtualHost** | Konfigurasi domain di Apache |
 | **www-data** | User default Apache/Nginx |
@@ -1008,6 +1143,8 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Firewalld block | `firewall-cmd --add-port=<port>/tcp --permanent && firewall-cmd --reload` |
 | `dpkg` interrupted | `sudo dpkg --configure -a` |
 | Service stuck | Kill proses, restart VM kalau perlu |
+| Systemd service gagal | `journalctl -u <svc> -n 50 --no-pager` |
+| GRUB error | Boot ke Live USB → `grub-install` + `update-grub` |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
@@ -1730,6 +1867,8 @@ curl http://localhost:8080
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-12 | Tambah 5.8 systemd Service (Lab 18.1) |
+| 2026-10-12 | Tambah 5.7 System Startup & GRUB teori (Lab 17.0) |
 | 2026-10-11 | Tambah 8.9 Firewalld & Zone teori (Lab 16.0) |
 | 2026-10-11 | Tambah 8.8 Nginx Custom Port (Lab 16.3) |
 | 2026-10-11 | Tambah 8.7 phpMyAdmin + Firewalld (Lab 16.2) |
@@ -1783,6 +1922,8 @@ curl http://localhost:8080
 - **5.4:** Lab 12.2 (Restricted User)
 - **5.5:** Lab 12.4 (SSH Key Auth)
 - **5.6:** Lab 11.1 (Kernel & Boot)
+- **5.7:** Lab 17.0 (System Startup & GRUB Teori)
+- **5.8:** Lab 18.1 (systemd Service)
 - **6.1:** Lab 13.1 (Chmod Symbolic)
 - **6.2:** Lab 13.2 (Chmod Octal)
 - **6.3:** Lab 13.3 (ACL)
