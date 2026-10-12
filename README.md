@@ -56,6 +56,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 18.1 | Adding a New Startup Service with systemd | ✅ | [Lihat](18-systemd/lab-18.1-systemd-service.md) |
 | 19.0 | Basic Troubleshooting (Teori) | ✅ | [Lihat](19-troubleshooting/lab-19.0-basic-troubleshooting-theory.md) |
 | 19.1 | Quiz: Troubleshooting Apache | ✅ | [Lihat](19-troubleshooting/lab-19.1-troubleshooting-apache.md) |
+| Challenge 1 | Working with File Content | ✅ | [Lihat](20-challenges/challenge-1-file-content.md) |
 
 
 ## 📖 Referensi Cepat
