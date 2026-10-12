@@ -94,7 +94,7 @@ $ nusactl start linlab-challenge-5
 
 6. Ubah default shell `trainer3` menjadi **`/bin/sh`**.
 
-### ✅ Solusi
+### ✅ Solusi (Urutan yang Benar)
 
 ```bash
 # 1. Buat user dengan shell bash
@@ -102,36 +102,50 @@ $ sudo useradd -m -s /bin/bash trainer1
 $ sudo useradd -m -s /bin/bash trainer2
 $ sudo useradd -m -s /bin/bash trainer3
 
-# 2. Set password (non-interaktif pakai chpasswd)
-$ echo "trainer1:Train!@#123" | sudo chpasswd
-$ echo "trainer2:Train!@#123" | sudo chpasswd
-$ echo "trainer3:Train!@#123" | sudo chpasswd
+# 2. Set password DULU — pakai KUTIP TUNGGAL karena ada karakter '!'
+$ echo 'trainer1:Train!@#123' | sudo chpasswd
+$ echo 'trainer2:Train!@#123' | sudo chpasswd
+$ echo 'trainer3:Train!@#123' | sudo chpasswd
 
-# 3a. Comment untuk tiap user
+# 3. Comment untuk tiap user
 $ sudo usermod -c "Trainer One" trainer1
 $ sudo usermod -c "Trainer Two" trainer2
 $ sudo usermod -c "Trainer Three" trainer3
 
-# 3b. Max password age trainer1: 7 hari
+# 4. Max password age trainer1: 7 hari
 $ sudo chage -M 7 trainer1
 
-# 3c. Lock akun trainer2
+# 5. Lock akun trainer2 (SETELAH password di-set)
 $ sudo usermod -L trainer2
-# atau: sudo passwd -l trainer2
 
-# 3d. Force change password trainer3 saat login
+# 6. Force change password trainer3 (SETELAH password di-set)
 $ sudo chage -d 0 trainer3
 
-# 4. Buat group coaches
+# 7. Buat group coaches
 $ sudo groupadd coaches
 
-# 5. Tambahkan trainer1 & trainer2 ke coaches (append)
+# 8. Tambahkan trainer1 & trainer2 ke coaches (append)
 $ sudo usermod -aG coaches trainer1
 $ sudo usermod -aG coaches trainer2
 
-# 6. Ubah shell trainer3 ke /bin/sh
+# 9. Ubah shell trainer3 ke /bin/sh
 $ sudo usermod -s /bin/sh trainer3
 ```
+
+### ⚠️ Urutan Sangat Penting
+
+```
+1. useradd         → buat user
+2. chpasswd        → set password DULU ←
+3. usermod -c      → comment
+4. chage -M        → policy
+5. usermod -L      → LOCK SETELAH password
+6. chage -d 0      → FORCE CHANGE SETELAH password
+7. groupadd + -aG  → group
+8. usermod -s      → shell
+```
+
+**Kenapa?** `chpasswd` **menghapus** flag `!` (locked) di `/etc/shadow` dan **menimpa** tanggal "last change". Kalau `usermod -L` atau `chage -d 0` dijalankan **sebelum** `chpasswd`, konfigurasinya akan **hilang**.
 
 ### 🔍 Penjelasan Opsi Penting
 
@@ -139,73 +153,68 @@ $ sudo usermod -s /bin/sh trainer3
 - `-m` = buat home directory (`/home/trainerX`).
 - `-s /bin/bash` = set default shell.
 
-**`echo "user:pass" | chpasswd`**
+**`echo 'user:pass' | chpasswd`**
 - Non-interaktif — set password dalam satu perintah.
-- Lebih cepat daripada `passwd` yang interaktif.
-- Password harus dalam plain text, tidak boleh ada karakter `:`.
+- **WAJIB** pakai kutip tunggal (`'...'`) kalau password mengandung `!`.
 
 **`usermod -c "Comment"`**
 - Set **GECOS field** (comment) di `/etc/passwd`.
 
 **`chage -M 7 trainer1`**
 - Max 7 hari password valid.
-- Setelah 7 hari, user **wajib** ganti password.
 
 **`usermod -L trainer2`**
-- Lock akun — **tidak bisa login**.
-- Cara kerja: tambah `!` di depan hash password di `/etc/shadow`.
+- Lock akun — tambah `!` di depan hash password di `/etc/shadow`.
 - Unlock: `usermod -U trainer2`.
 
 **`chage -d 0 trainer3`**
-- Set "last password change" ke epoch 0.
-- Efek: user **wajib ganti password** saat login berikutnya.
+- Set "last password change" ke epoch 0 → paksa ganti password saat login.
 
 **`usermod -aG coaches`**
 - `-aG` = **append** + supplementary group.
 - **WAJIB pakai `-a`**. Kalau hanya `-G`, group lama akan **diganti**.
-- Primary group **tidak berubah**.
 
 **`usermod -s /bin/sh trainer3`**
-- Ganti default shell. `/bin/sh` biasanya symlink ke `dash` (POSIX shell).
+- Ganti default shell ke `/bin/sh` (POSIX shell, biasanya symlink ke `dash`).
 
 ---
 
 ## 🔍 Verifikasi
 
-### 1. Cek user sudah dibuat
+### 1. Cek user di `/etc/passwd`
 
 ```bash
 $ grep -E "trainer[123]" /etc/passwd
 ```
 
-Output yang diharapkan (contoh):
+Output yang diharapkan:
 ```
 trainer1:x:1001:1001:Trainer One:/home/trainer1:/bin/bash
 trainer2:x:1002:1002:Trainer Two:/home/trainer2:/bin/bash
 trainer3:x:1003:1003:Trainer Three:/home/trainer3:/bin/sh
 ```
 
-**Perhatikan:**
-- Kolom ke-5 = comment (`Trainer One`, dll).
-- Kolom ke-7 = shell (`/bin/bash` atau `/bin/sh`).
-
-### 2. Cek password aging
+### 2. Cek status password & lock
 
 ```bash
-# Max age trainer1 harus 7
-$ sudo chage -l trainer1 | grep "Maximum"
-Maximum number of days between password change          : 7
-
-# trainer3 harus force change saat login
-$ sudo chage -l trainer3 | grep "Last"
-Last password change                                    : password must be changed
+$ sudo passwd -S trainer1
+$ sudo passwd -S trainer2
+$ sudo passwd -S trainer3
 ```
 
-### 3. Cek status lock trainer2
+Output yang diharapkan:
+
+| User | Status | Tanggal | Keterangan |
+|---|---|---|---|
+| trainer1 | `P` | 2026-10-12 | Password set (normal) ✅ |
+| trainer2 | `L` | 2026-10-12 | **Locked** ✅ |
+| trainer3 | `P` | **1970-01-01** | **Force change** ✅ |
+
+### 3. Cek password aging trainer1
 
 ```bash
-$ sudo passwd -S trainer2
-trainer2 L ...    ← 'L' = Locked
+$ sudo chage -l trainer1 | grep -E "Maximum|Minimum"
+Maximum number of days between password change          : 7
 ```
 
 ### 4. Cek group coaches
@@ -215,17 +224,17 @@ $ grep coaches /etc/group
 coaches:x:1004:trainer1,trainer2
 ```
 
-### 5. Cek group membership user
+### 5. Cek group membership
 
 ```bash
 $ id trainer1
 uid=1001(trainer1) gid=1001(trainer1) groups=1001(trainer1),1004(coaches)
-                                       ↑             ↑
-                                    primary    supplementary
 
 $ id trainer2
 uid=1002(trainer2) gid=1002(trainer2) groups=1002(trainer2),1004(coaches)
 ```
+
+Perhatikan: primary group (gid) **tetap** `trainerX`, `coaches` jadi **supplementary**.
 
 ### 6. Grading
 
@@ -237,43 +246,69 @@ $ nusactl grade linlab-challenge-5
 
 ## 🐛 Troubleshooting & Kesalahan
 
-- **Password dengan `!` gagal di shell:** Karakter `!` bisa memicu **history expansion** di bash. Solusi: pakai **kutip tunggal**:
+### Masalah Nyata yang Dialami
+
+- **`-bash: !@#123: event not found`:**
+
+  **Penyebab:** Karakter `!` di dalam **double quote** (`"..."`) memicu **bash history expansion**.
+
+  **Contoh error:**
+  ```bash
+  $ echo "trainer1:Train!@#123" | sudo chpasswd
+  -bash: !@#123: event not found
+  ```
+
+  **Solusi:** Pakai **kutip tunggal** (`'...'`):
   ```bash
   $ echo 'trainer1:Train!@#123' | sudo chpasswd
   ```
 
-- **`useradd` tanpa `-m` tidak buat home:** Di beberapa distro, `useradd` default **tidak** buat home. Selalu pakai `-m`.
+- **Setelah fix password, `trainer2` status berubah dari `L` ke `P`:**
 
-- **`usermod -G` (tanpa `-a`) menghapus group lama:** Kesalahan klasik. Untuk **menambah** group, selalu `usermod -aG`. Kalau sudah kejadian, tambahkan group lama kembali.
+  **Penyebab:** `chpasswd` **menghapus** flag `!` (locked) di `/etc/shadow` saat set password baru. Lock dari `usermod -L` yang dijalankan **sebelum** `chpasswd` akan **hilang**.
 
-- **`chage -M 7` tidak langsung berlaku:** Perubahan berlaku saat user login berikutnya. Cek dengan `chage -l`.
+  **Gejala:** `passwd -S trainer2` awalnya `L`, setelah `chpasswd` jadi `P`. Case 6 gagal.
+
+  **Solusi:** Jalankan `usermod -L trainer2` **SETELAH** password di-set.
+
+- **`trainer3` tidak lagi diminta ganti password:**
+
+  **Penyebab:** Sama — `chpasswd` **menimpa** field "last password change" dengan tanggal hari ini, sehingga flag *force change* dari `chage -d 0` hilang.
+
+  **Gejala:** `passwd -S trainer3` menunjukkan tanggal hari ini, bukan `1970-01-01`.
+
+  **Solusi:** Jalankan `chage -d 0 trainer3` **SETELAH** password di-set.
+
+- **Ringkasan urutan yang benar:**
+
+  ```bash
+  useradd → chpasswd → usermod -L → chage -d 0
+  ```
+  Bukan:
+  ```bash
+  useradd → usermod -L → chage -d 0 → chpasswd  ← SALAH
+  ```
+
+### Kesalahan Umum Lainnya
+
+- **`useradd` tanpa `-m` tidak buat home:** Di beberapa distro, `useradd` default tidak buat home. Selalu pakai `-m`.
+
+- **`usermod -G` (tanpa `-a`) menghapus group lama:** Selalu pakai `usermod -aG`.
 
 - **`usermod -L` tidak mengunci user yang login aktif:** Lock hanya mencegah **login baru**. User yang sedang login tetap bisa lanjut sampai logout.
 
-- **`chage -d 0` sebelum password di-set:** Bisa bikin field di `/etc/shadow` jadi `0` tapi password masih `!!`. Urutan yang benar: `useradd` → `chpasswd` → `chage -d 0`.
+- **`chage -d 0` sebelum password di-set:** Bisa bikin field di `/etc/shadow` jadi `0` tapi password masih `!!`. Urutan: `chpasswd` dulu, baru `chage -d 0`.
 
-- **User `trainer2` tetap bisa login meski locked:** Cek dengan `passwd -S trainer2`. Kalau status `P` (password set) bukan `L` (locked), lock belum berhasil.
+- **`groupadd coaches` error "already exists":** Pakai `groupadd -f` untuk idempotent.
 
-- **`id trainer1` tidak menampilkan `coaches`:** User perlu **logout & login ulang** agar group baru aktif. Untuk sesi saat ini, cek dengan `groups trainer1`.
+- **`id trainer1` tidak menampilkan `coaches`:** User perlu logout & login ulang. Untuk sesi saat ini, cek dengan `groups trainer1`.
 
-- **`groupadd coaches` error "already exists":** Pakai `groupadd -f` untuk idempotent:
-  ```bash
-  $ sudo groupadd -f coaches
-  ```
+- **Password ditolak sistem:** Cek `/etc/pam.d/common-password` atau `/etc/security/pwquality.conf`.
 
-- **`usermod -s /bin/sh` gagal "shell not found":** Pastikan `/bin/sh` ada dan terdaftar di `/etc/shells`:
-  ```bash
-  $ cat /etc/shells
-  ```
-
-- **Verifikasi user di `/etc/passwd` tidak muncul comment:** Cek apakah `usermod -c` berhasil. Kalau tidak, mungkin ada typo di nama user.
-
-- **Log grading gagal di case tertentu:** Cek log:
+- **Log grading gagal di case tertentu:**
   ```bash
   $ cat /var/log/nusactl/labs/linlab-challenge-5.log
   ```
-
-- **Password ditolak sistem:** Password `Train!@#123` mungkin tidak lolos **password quality check** (PAM). Cek `/etc/pam.d/common-password` atau `/etc/security/pwquality.conf`.
 
 ---
 
@@ -288,6 +323,40 @@ $ nusactl grade linlab-challenge-5
 
 **Aturan:** Selalu pakai `-aG` untuk menambah. Kalau tidak pakai `-a`, group lama akan hilang (meskipun primary group tidak terpengaruh).
 
+### `chpasswd` — Efek Samping yang Sering Dilupakan
+
+`chpasswd` mengubah beberapa field di `/etc/shadow`:
+
+1. Hash password baru.
+2. Field "last password change" ke **hari ini**.
+3. **Menghapus** flag `!` (locked) di depan hash jika ada.
+
+**Konsekuensi:**
+- `usermod -L` yang dijalankan **sebelum** `chpasswd` → **hilang**.
+- `chage -d 0` yang dijalankan **sebelum** `chpasswd` → **tertimpa** tanggal baru.
+
+**Solusi:** Set password **DULU**, baru apply policy:
+```
+useradd → chpasswd → usermod -L → chage -d 0
+```
+
+### History Expansion di Bash
+
+Karakter `!` di double quote memicu **history expansion** — bash mencoba menggantinya dengan perintah sebelumnya.
+
+**Contoh:**
+```bash
+$ echo "test!@#123"
+-bash: !@#123: event not found
+```
+
+**Tiga solusi:**
+1. **Single quote:** `echo 'test!@#123'` ✅ (paling mudah)
+2. **Escape:** `echo "test\!@#123"` ✅
+3. **Disable history expansion:** `set +H` (permanen: tambah di `.bashrc`)
+
+**Rule of thumb:** Kalau string mengandung karakter khusus (`!`, `$`, `` ` ``, `\`), **selalu pakai single quote**.
+
 ### Lock vs Delete — Kapan Pakai Apa?
 
 | Skenario | Aksi |
@@ -296,58 +365,16 @@ $ nusactl grade linlab-challenge-5
 | Karyawan cuti panjang | **Lock** |
 | Akun testing selesai | **Delete** |
 | Akun duplikat | **Delete** |
-| User sementara | **Delete** setelah selesai |
 
 **Rekomendasi:** Untuk user production, **lock** lebih aman — bisa di-unlock kapan saja, dan file yang dimiliki tetap ada.
 
-### `chage -d 0` — Force Password Change
+### Status di `passwd -S`
 
-**Cara kerja:**
-- Set field "last password change" di `/etc/shadow` ke `0` (epoch = 1 Jan 1970).
-- Saat user login, sistem lihat tanggalnya sudah lewat jauh → paksa ganti password.
-
-**Alternatif:** `passwd -e trainer3` — efeknya sama.
-
-**Urutan yang benar:**
-1. `useradd trainer3`
-2. `passwd trainer3` — set password
-3. `chage -d 0 trainer3` — paksa ganti
-
-Kalau `chage -d 0` dijalankan **sebelum** password di-set, field jadi `0` tapi password masih `!!` — sistem bingung.
-
-### `chpasswd` vs `passwd`
-
-| Perintah | Mode | Cocok untuk |
-|---|---|---|
-| `passwd user` | Interaktif | Set manual |
-| `echo "user:pass" \| chpasswd` | Non-interaktif | Script, otomasi |
-
-**`chpasswd`** sangat berguna untuk **provisioning user massal** — bisa loop:
-```bash
-for user in trainer1 trainer2 trainer3; do
-  echo "$user:Train!@#123" | sudo chpasswd
-done
-```
-
-### Kapan Group Baru Aktif?
-
-- **Saat login berikutnya** (logout-login ulang).
-- **Bukan** langsung setelah `usermod -aG`.
-- Untuk verifikasi cepat, pakai `groups trainer1` (query langsung ke `/etc/group`).
-
-### Detail `/etc/passwd` — 7 Kolom
-
-```
-trainer1:x:1001:1001:Trainer One:/home/trainer1:/bin/bash
-    │    │  │    │         │           │              │
-    │    │  │    │         │           │              └── shell
-    │    │  │    │         │           └── home directory
-    │    │  │    │         └── comment (GECOS)
-    │    │  │    └── GID (primary group)
-    │    │  └── UID
-    │    └── password placeholder (x = lihat /etc/shadow)
-    └── username
-```
+| Kode | Arti |
+|---|---|
+| `P` | Password set — akun aktif |
+| `L` | **Locked** — tidak bisa login |
+| `NP` | No Password — tidak butuh password (bahaya) |
 
 ### Detail `/etc/shadow` — 9 Kolom
 
@@ -360,7 +387,7 @@ trainer1:$6$...:18000:0:7:5:::
     │      │      │   └── max days (7)
     │      │      └── min days (0)
     │      └── last change (18000 = tanggal)
-    └── hash password
+    └── hash password (kalau diawali `!` = locked)
 ```
 
 ### Real-World Use Cases
@@ -370,24 +397,18 @@ trainer1:$6$...:18000:0:7:5:::
 - **Security policy:** Max password age 90 hari untuk semua user.
 - **Team collaboration:** Buat group, tambah user, set permission directory ke group.
 
-### Kasus Nyata
-
-- **Server production:** User baru di-set `chage -d 0` agar langsung ganti password default.
-- **Karyawan resign:** Akun di-lock, tapi file tetap ada untuk audit.
-- **Tim DevOps:** Group `devops` untuk akses shared directory `/var/www`.
-- **Contractor:** Akun dengan expiry date — otomatis tidak bisa login setelah tanggal.
-
 ### Pelajaran Kunci dari Challenge Ini
 
 1. **`useradd -m -s`** = user + home + shell.
 2. **`chpasswd`** = set password non-interaktif.
-3. **`usermod -c`** = set comment (GECOS).
-4. **`chage -M`** = max password age.
-5. **`usermod -L`** = lock akun.
-6. **`chage -d 0`** = force change password.
-7. **`usermod -aG`** = append ke group (jangan `-G`!).
-8. **`usermod -s`** = ubah shell.
-9. **Verifikasi dengan `id` + `chage -l` + `passwd -S`.**
+3. **Single quote** wajib kalau password ada `!`.
+4. **`usermod -c`** = set comment (GECOS).
+5. **`chage -M`** = max password age.
+6. **`usermod -L`** = lock akun.
+7. **`chage -d 0`** = force change password.
+8. **`usermod -aG`** = append ke group (jangan `-G`!).
+9. **`chpasswd` menghapus lock & force change** — urutan penting!
+10. **Verifikasi dengan `id` + `chage -l` + `passwd -S`.**
 
 ---
 
@@ -396,22 +417,20 @@ trainer1:$6$...:18000:0:7:5:::
 | Perintah | Fungsi |
 |---|---|
 | `sudo useradd -m -s /bin/bash <user>` | Buat user + home + shell |
-| `echo "user:pass" \| sudo chpasswd` | Set password non-interaktif |
+| `echo 'user:pass' \| sudo chpasswd` | Set password non-interaktif |
 | `sudo passwd <user>` | Set password interaktif |
 | `sudo usermod -c "Comment" <user>` | Set comment |
 | `sudo chage -M 7 <user>` | Max password age 7 hari |
 | `sudo chage -d 0 <user>` | Force change password |
 | `sudo usermod -L <user>` | Lock user |
 | `sudo usermod -U <user>` | Unlock user |
-| `sudo passwd -l <user>` | Lock via passwd |
-| `sudo passwd -e <user>` | Expire password (force change) |
-| `sudo groupadd <group>` | Buat group |
+| `sudo passwd -S <user>` | Cek status password |
+| `sudo groupadd -f <group>` | Buat group (idempotent) |
 | `sudo usermod -aG <group> <user>` | Append ke group |
 | `sudo usermod -s /bin/sh <user>` | Ubah shell |
 | `id <user>` | Lihat UID, GID, group |
 | `groups <user>` | Daftar group user |
 | `sudo chage -l <user>` | Lihat aging info |
-| `sudo passwd -S <user>` | Cek status password |
 
 **File penting:**
 
@@ -424,7 +443,7 @@ trainer1:$6$...:18000:0:7:5:::
 | `/etc/login.defs` | Default policy user baru |
 | `/etc/skel/` | Template home |
 
-**Urutan perintah lengkap:**
+**Urutan perintah lengkap (final):**
 
 ```bash
 # 1. Buat user dengan shell
@@ -432,35 +451,52 @@ sudo useradd -m -s /bin/bash trainer1
 sudo useradd -m -s /bin/bash trainer2
 sudo useradd -m -s /bin/bash trainer3
 
-# 2. Set password non-interaktif
+# 2. Set password DULU — pakai single quote
 echo 'trainer1:Train!@#123' | sudo chpasswd
 echo 'trainer2:Train!@#123' | sudo chpasswd
 echo 'trainer3:Train!@#123' | sudo chpasswd
 
-# 3. Set comment
+# 3. Comment
 sudo usermod -c "Trainer One" trainer1
 sudo usermod -c "Trainer Two" trainer2
 sudo usermod -c "Trainer Three" trainer3
 
-# 4. Password policy
-sudo chage -M 7 trainer1       # max 7 hari
-sudo usermod -L trainer2       # lock
-sudo chage -d 0 trainer3       # force change
+# 4. Policy max age
+sudo chage -M 7 trainer1
 
-# 5. Buat group + tambah user
+# 5. Lock & force change SETELAH password
+sudo usermod -L trainer2
+sudo chage -d 0 trainer3
+
+# 6. Group
 sudo groupadd coaches
 sudo usermod -aG coaches trainer1
 sudo usermod -aG coaches trainer2
 
-# 6. Ubah shell trainer3
+# 7. Shell
 sudo usermod -s /bin/sh trainer3
 
-# 7. Verifikasi
+# 8. Verifikasi
 grep -E "trainer[123]" /etc/passwd
-sudo chage -l trainer1
-sudo passwd -S trainer2
+sudo passwd -S trainer2         # harus 'L'
+sudo passwd -S trainer3         # harus tanggal 1970-01-01
+sudo chage -l trainer1          # max harus 7
 grep coaches /etc/group
 id trainer1
+```
+
+**Verifikasi cepat:**
+
+```bash
+# Status semua user
+sudo passwd -S trainer1
+sudo passwd -S trainer2
+sudo passwd -S trainer3
+
+# Output yang diharapkan:
+# trainer1 P 2026-10-12 7 7 5 -1       ← normal
+# trainer2 L 2026-10-12 7 30 5 -1      ← locked
+# trainer3 P 1970-01-01 7 30 5 -1      ← force change
 ```
 
 ---
@@ -470,7 +506,7 @@ id trainer1
 Lab Challenge 5 ini menguji kemampuan **manajemen user advanced** — dari membuat user dengan konfigurasi lengkap, sampai mengatur kebijakan password & group. Yang diuji:
 
 - **`useradd`** dengan opsi `-m -s` (home + shell).
-- **`chpasswd`** untuk password non-interaktif.
+- **`chpasswd`** untuk password non-interaktif (dengan kutip tunggal untuk `!`).
 - **`usermod -c`** untuk comment (GECOS).
 - **`chage`** untuk password aging policy (max age, force change).
 - **`usermod -L`** untuk lock akun.
@@ -478,15 +514,13 @@ Lab Challenge 5 ini menguji kemampuan **manajemen user advanced** — dari membu
 - **`usermod -s`** untuk ubah shell.
 - **Verifikasi** dengan `id`, `chage -l`, `passwd -S`.
 
-Kemampuan ini adalah **inti dari sysadmin** — hampir setiap hari berurusan dengan user. Pola yang benar:
+Kemampuan ini adalah **inti dari sysadmin** — hampir setiap hari berurusan dengan user. Yang paling berharga dari challenge ini:
 
-1. **Buat user** dengan `useradd -m -s`.
-2. **Set password** dengan `chpasswd`.
-3. **Set policy** dengan `chage` dan `usermod`.
-4. **Tambah ke group** dengan `usermod -aG`.
-5. **Verifikasi** dengan `id` + `chage -l` + `passwd -S`.
+1. **Pelajaran `!` di bash** — single quote wajib untuk password dengan karakter khusus.
+2. **Pelajaran urutan `chpasswd`** — set password DULU, baru lock & force change. Kalau dibalik, konfigurasi akan hilang.
+3. **Pelajaran `usermod -aG`** — jangan `-G` tanpa `-a`.
 
-Yang paling berharga dari challenge ini: **pengalaman langsung** melihat bagaimana `usermod -G` (tanpa `-a`) bisa menghapus group lama — pelajaran berharga yang tidak akan dilupakan.
+Ketiga pelajaran ini **sangat berharga** untuk otomasi user provisioning di production — urutan perintah sangat penting, dan detail kecil seperti tanda kutip bisa bikin gagal.
 
 **Motto sysadmin:** *User management yang rapi = server yang aman.*
 
