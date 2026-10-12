@@ -60,6 +60,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | Challenge 2 | Finding Files | ✅ | [Lihat](20-challenges/challenge-2-finding-files.md) |
 | Challenge 3 | Working with Partition | ✅ | [Lihat](20-challenges/challenge-3-partition.md) |
 | Challenge 4 | Comparing Files | ✅ | [Lihat](20-challenges/challenge-4-comparing-files.md) |
+| Challenge 5 | Manage User Accounts | ✅ | [Lihat](20-challenges/challenge-5-user-accounts.md) |
 
 ## 📖 Referensi Cepat
 
