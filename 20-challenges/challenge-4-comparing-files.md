@@ -13,7 +13,7 @@ Setelah menyelesaikan lab ini, saya mampu:
 - Membandingkan **isi dua file** dengan `diff`
 - Membandingkan **dua directory tree** secara rekursif
 - Mengidentifikasi file yang **hanya ada di satu direktori**
-- Menyimpan hasil perbandingan ke **file output**
+- Menyimpan hasil perbandingan ke **file output** dengan format yang diminta
 
 ---
 
@@ -48,13 +48,14 @@ Contoh:
 ```
 Artinya: baris 5 di file1 **diubah** menjadi baris 5 di file2.
 
-**Untuk direktori, `diff -r` akan:**
+**Untuk direktori, `diff -rq` punya 2 jenis output:**
 
 | Output | Arti |
 |---|---|
-| `Files X and Y differ` | File X dan Y isinya berbeda |
-| `Only in dir1: file.txt` | File hanya ada di dir1 |
-| `Only in dir2: file.txt` | File hanya ada di dir2 |
+| `Files X and Y differ` | File X dan Y **isinya berbeda** |
+| `Only in <dir>: <file>` | File **hanya ada di satu direktori** |
+
+> **Pelajaran penting:** "Different file" bisa berarti 2 hal — isinya beda, **atau** keberadaannya cuma di satu sisi. Baca output mentah dulu untuk tahu mana yang dimaksud.
 
 ---
 
@@ -83,10 +84,10 @@ $ nusactl start linlab-challenge-4
 # 1. Bandingkan 2 file, ignore case
 $ diff -i /home/student/challenge04/fileA.txt /home/student/challenge04/fileB.txt > /home/student/challenge04/results01.txt
 
-# 2. Bandingkan direktori rekursif, cari 1 file yang berbeda
-$ diff -rq /home/student/challenge04/compare01 /home/student/challenge04/compare02 | grep "^Files" | awk '{print $2}' > /home/student/challenge04/results02.txt
+# 2. Bandingkan direktori rekursif → extract absolute path file yang berbeda
+$ diff -rq /home/student/challenge04/compare01 /home/student/challenge04/compare02 | grep "Only in" | sed 's/Only in \(.*\): \(.*\)/\1\/\2/' > /home/student/challenge04/results02.txt
 
-# 3. Cari file yang HANYA ada di comdir02
+# 3. Cari file yang HANYA ada di comdir02 → nama file saja
 $ diff -rq /home/student/challenge04/comdir01 /home/student/challenge04/comdir02 | grep "Only in /home/student/challenge04/comdir02" | awk '{print $NF}' > /home/student/challenge04/results03.txt
 ```
 
@@ -96,38 +97,36 @@ $ diff -rq /home/student/challenge04/comdir01 /home/student/challenge04/comdir02
 - `-i` = ignore case (case-insensitive).
 - Tanpa `-i`, `Hello` ≠ `hello`. Dengan `-i`, keduanya dianggap sama.
 
-**Task 2 — `diff -rq` + grep + awk**
-- `-r` = recursive — turun ke subdirektori.
-- `-q` = quiet — hanya tampilkan file yang **berbeda**, bukan isi perbedaannya.
-- Output: `Files /path/to/file1 and /path/to/file2 differ`
-- `grep "^Files"` = filter hanya baris "Files ... differ".
-- `awk '{print $2}'` = ambil kolom ke-2 = path file pertama.
+**Task 2 — `diff -rq` + `sed` untuk extract absolute path**
 
-**Task 3 — `diff -rq` + filter "Only in"**
-- Output `diff -rq` untuk file yang hanya ada di satu sisi:
-  ```
-  Only in /home/student/challenge04/comdir02: file_xyz.txt
-  ```
-- `grep "Only in /home/student/challenge04/comdir02"` = filter hanya baris yang menunjuk ke comdir02.
-- `awk '{print $NF}'` = ambil kolom terakhir = nama file **saja** (tanpa path).
-
-### 🧩 Alternatif Solusi Task 3 — Pakai `comm`
-
-Kalau file di kedua direktori **flat** (tidak ada subdirektori):
-
-```bash
-# 1. List file, sort
-$ ls /home/student/challenge04/comdir01 > /tmp/list01.txt
-$ ls /home/student/challenge04/comdir02 > /tmp/list02.txt
-
-# 2. comm — tampilkan file yang hanya ada di list02
-$ comm -13 <(sort /tmp/list01.txt) <(sort /tmp/list02.txt) > /home/student/challenge04/results03.txt
+Output `diff -rq` untuk file yang hanya ada di satu sisi:
+```
+Only in /home/student/challenge04/compare01/ganjil: sample98
 ```
 
-**Penjelasan `comm`:**
-- `comm -13` = tampilkan **kolom ke-3** saja (file yang hanya ada di file kedua).
-- `-12` = hanya kolom 3, `-23` = hanya kolom 1, dst.
-- Wajib pakai file yang sudah **sorted**.
+Kita perlu:
+1. Filter baris `Only in`
+2. Extract path direktori + nama file
+3. Gabungkan jadi absolute path lengkap
+
+**Perintah `sed 's/Only in \(.*\): \(.*\)/\1\/\2/'`:**
+
+| Bagian | Arti |
+|---|---|
+| `s/.../.../` | Substitusi |
+| `Only in \(.*\):` | Capture grup 1 = path direktori |
+| ` \(.*\)` | Capture grup 2 = nama file |
+| `\1\/\2` | Hasil: `<path_dir>/<nama_file>` |
+
+**Hasil:**
+```
+/home/student/challenge04/compare01/ganjil/sample98
+```
+
+**Task 3 — `grep "Only in...comdir02"` + `awk '{print $NF}'`**
+
+- `$NF` = kolom terakhir = nama file saja.
+- Output `Only in /path/comdir02: file_xyz.txt` → `$NF` = `file_xyz.txt`.
 
 ---
 
@@ -147,7 +146,7 @@ Harus ada 3 file: `results01.txt`, `results02.txt`, `results03.txt`.
 $ cat /home/student/challenge04/results01.txt
 ```
 
-Kalau case-insensitive, perbedaan **hanya di case** tidak akan muncul. Kalau ada perbedaan selain case, akan muncul format `XcY`.
+Isi: format `XcY` (baris yang berubah) atau kosong kalau hanya case yang beda.
 
 ### 3. Cek hasil Task 2
 
@@ -155,7 +154,10 @@ Kalau case-insensitive, perbedaan **hanya di case** tidak akan muncul. Kalau ada
 $ cat /home/student/challenge04/results02.txt
 ```
 
-Harus berisi **satu absolute path** file yang berbeda (misal `/home/student/challenge04/compare01/subdir/file.txt`).
+Harus berisi **satu absolute path**:
+```
+/home/student/challenge04/compare01/ganjil/sample98
+```
 
 ### 4. Cek hasil Task 3
 
@@ -165,19 +167,7 @@ $ cat /home/student/challenge04/results03.txt
 
 Harus berisi **nama file saja** (bukan path).
 
-### 5. Bandingkan dengan source (opsional)
-
-```bash
-# Lihat semua file di comdir02
-$ ls -la /home/student/challenge04/comdir02/
-
-# Lihat semua file di comdir01
-$ ls -la /home/student/challenge04/comdir01/
-```
-
-File yang ada di `comdir02` tapi **tidak** di `comdir01` = isi `results03.txt`.
-
-### 6. Grading
+### 5. Grading
 
 ```bash
 $ nusactl grade linlab-challenge-4
@@ -187,151 +177,119 @@ $ nusactl grade linlab-challenge-4
 
 ## 🐛 Troubleshooting & Kesalahan
 
-- **`diff: No such file or directory`:** Cek path file/direktori:
+### Masalah Nyata yang Dialami
+
+- **`results02.txt` kosong (0 bytes) padahal sudah pakai `grep "^Files"`:**
+
+  **Penyebab:** Ternyata perbedaan yang dimaksud bukan `Files ... differ`, melainkan `Only in ...`.
+
+  Output `diff -rq` yang muncul:
+  ```
+  Only in /home/student/challenge04/compare01/ganjil: sample98
+  ```
+
+  `grep "^Files"` tidak menangkap baris `Only in` → hasil kosong.
+
+  **Solusi:** Ganti grep ke `"Only in"` + pakai `sed` untuk extract absolute path:
+  ```bash
+  diff -rq dir1 dir2 | grep "Only in" | sed 's/Only in \(.*\): \(.*\)/\1\/\2/' > results02.txt
+  ```
+
+- **Log grading: "the input file is not appropriate or the path is not absolute":**
+
+  **Penyebab:** Grader ingin **absolute path** (mulai dari `/`), bukan nama file saja atau path relatif.
+
+  **Solusi:** Extract path lengkap dengan `sed`. Contoh hasil yang benar:
+  ```
+  /home/student/challenge04/compare01/ganjil/sample98
+  ```
+
+- **Bingung mana yang dimaksud "different file":**
+
+  Ada 2 jenis perbedaan di `diff -rq`:
+  - **`Files X and Y differ`** → file ada di kedua sisi, isinya beda
+  - **`Only in <dir>: <file>`** → file hanya ada di satu sisi
+
+  Selalu jalankan `diff -rq` **mentah** dulu sebelum parsing, biar tahu mana yang dimaksud.
+
+### Kesalahan Umum Lainnya
+
+- **`diff: No such file or directory`:** Cek path:
   ```bash
   ls -la /home/student/challenge04/
   ```
 
-- **Output `diff` kosong:** Berarti file **identik**. Untuk Task 1, kalau `-i` di-set tapi output kosong, berarti file sama persis (case-insensitive). Ini bukan error — tapi kalau lab minta ada perbedaan, cek apakah perlu **tanpa** `-i`.
+- **Output `diff -i` kosong:** Berarti file **identik** (case-insensitive). Bukan error, tapi cek apakah perlu **tanpa** `-i`.
 
-- **Task 2 output > 1 baris:** Berarti ada lebih dari satu file berbeda. Cek manual:
-  ```bash
-  diff -rq compare01 compare02
-  ```
-  Kalau ada lebih dari satu, cek lagi — lab biasanya sengaja set tepat satu file berbeda.
-
-- **Task 3 output ada path, bukan nama file:** Berarti `awk` ambil kolom salah. Pastikan pakai `$NF` (kolom terakhir):
-  ```bash
-  diff -rq comdir01 comdir02 | grep "Only in.*comdir02" | awk '{print $NF}'
-  ```
-  Output `diff` untuk "Only in" adalah `Only in <path>: <filename>` — `$NF` = `<filename>`.
+- **Task 3 output ada path:** Berarti `awk` ambil kolom salah. Pastikan `$NF` (kolom terakhir).
 
 - **`grep "Only in"` ambil dari comdir01 juga:** Filter lebih spesifik:
   ```bash
   grep "Only in /home/student/challenge04/comdir02"
   ```
-  bukan hanya `grep "Only in"`.
 
-- **`comm` error "file not sorted":** `comm` butuh input **sorted**. Pakai `sort` dulu:
-  ```bash
-  comm -13 <(sort list1) <(sort list2)
-  ```
+- **`comm` error "file not sorted":** `comm` butuh input **sorted**. Pakai `sort` dulu.
 
-- **Task 1 output tidak seperti yang diharapkan:** Ingat, `diff -i` akan **abaikan perbedaan case**. Kalau file A = `Hello` dan file B = `HELLO`, `diff -i` **tidak** akan menampilkan perbedaan. Kalau lab ingin **menampilkan** perbedaan case, jangan pakai `-i`.
+- **`awk '{print $2}'` untuk Task 2 salah:** Kalau output `Files X and Y differ` → `$2` = X. Kalau output `Only in` → format beda, `$2` bukan path.
 
-- **`awk '{print $2}'` untuk Task 2 salah:** Format output `diff -rq` adalah:
-  ```
-  Files /path/file1 and /path/file2 differ
-  ```
-  Kolom ke-2 = `/path/file1`. Tapi kalau path mengandung **spasi**, awk bisa salah. Untuk kasus ini, biasanya path tidak ada spasi.
-
-- **Task 3 file punya subdirektori:** `diff -rq` akan menampilkan `Only in /path/subdir: file.txt`. Kalau kamu hanya ingin **nama file** (bukan path subdir), `$NF` sudah benar (kolom terakhir = nama file).
-
-- **Redirection ke file gagal permission:** Cek kepemilikan direktori `challenge04/`:
-  ```bash
-  ls -ld /home/student/challenge04/
-  ```
-  Kalau bukan milik `student`, pakai `sudo` atau ubah owner.
-
-- **File output sudah ada:** `>` akan **overwrite**. Kalau mau append, pakai `>>`.
-
-- **`diff` menampilkan `<` dan `>`:** Itu format normal. `<` = baris dari file pertama, `>` = baris dari file kedua. Bukan error.
+- **File output sudah ada:** `>` akan **overwrite**. Mau append pakai `>>`.
 
 ---
 
 ## 💡 Catatan & Insight Pribadi
 
-### Format Output `diff` — Cara Baca
+### Beda `Files differ` vs `Only in`
 
-**Contoh 1 — Baris berubah:**
-```
-5c5
-< ini dari file1
----
-> ini dari file2
-```
-Artinya: baris **ke-5** file1 **diubah** menjadi baris **ke-5** file2.
+| Format Output | Arti | Task Type |
+|---|---|---|
+| `Files X and Y differ` | File ada di **kedua** sisi, isinya beda | Compare contents |
+| `Only in <dir>: <file>` | File **hanya ada di satu** sisi | Find unique files |
 
-**Contoh 2 — Baris ditambah:**
-```
-3a4
-> baris tambahan
-```
-Artinya: setelah baris **ke-3** file1, **ditambahkan** baris baru di file2.
+**Pelajaran:** "Compare directories" bisa berarti 2 hal. Baca output mentah dulu, baru tentukan strategi parsing.
 
-**Contoh 3 — Baris dihapus:**
+### Parsing `diff -rq` — Pola Umum
+
+**Untuk `Files ... differ`:**
+```bash
+diff -rq dir1 dir2 | grep "^Files" | awk '{print $2}'
 ```
-5d4
-< baris yang dihapus
+
+**Untuk `Only in ...`:**
+```bash
+diff -rq dir1 dir2 | grep "Only in" | sed 's/Only in \(.*\): \(.*\)/\1\/\2/'
 ```
-Artinya: baris **ke-5** file1 **dihapus** di file2.
+
+**Untuk nama file saja:**
+```bash
+diff -rq dir1 dir2 | grep "Only in" | awk '{print $NF}'
+```
+
+### `sed` — Substitusi Pattern
+
+**Syntax dasar:**
+```bash
+sed 's/pattern_lama/pattern_baru/'
+```
+
+**Capture group:**
+```bash
+sed 's/\(grup1\) \(grup2\)/\2 \1/'   # swap grup1 dan grup2
+```
+
+**Contoh di lab ini:**
+```
+Input:  Only in /path/to/dir: file.txt
+Pattern: Only in \(.*\): \(.*\)
+Output: /path/to/dir/file.txt
+```
 
 ### `diff` vs `comm` vs `cmp`
 
 | Tool | Fungsi | Untuk |
 |---|---|---|
-| `diff` | Bandingkan baris per baris | File teks |
-| `comm` | Bandingkan **sorted** line | File sorted |
+| `diff` | Bandingkan baris per baris | File teks & direktori |
+| `comm` | Bandingkan **sorted** line | File sorted (list) |
 | `cmp` | Bandingkan byte per byte | File binary |
-
-**Rekomendasi:**
-- File teks biasa → `diff`
-- File sorted (list) → `comm`
-- File binary → `cmp`
-
-### `diff -r` untuk Direktori
-
-**Output `diff -rq` (brief):**
-```
-Files dir1/file1 and dir2/file1 differ
-Only in dir1: extra.txt
-Only in dir2: new.txt
-```
-
-**Output `diff -r` (full):**
-Menampilkan **isi** perbedaan juga, bukan hanya nama file.
-
-**Untuk lab ini, `-q` lebih efisien** — kita cuma butuh **nama file**, bukan isinya.
-
-### `grep` + `awk` = Kombinasi Powerful
-
-**Filter baris tertentu:**
-```bash
-$ diff -rq dir1 dir2 | grep "Only in"
-```
-
-**Ambil kolom tertentu:**
-```bash
-$ diff -rq dir1 dir2 | awk '{print $2}'
-```
-
-**Kombinasi:**
-```bash
-$ diff -rq dir1 dir2 | grep "pattern" | awk '{print $NF}'
-```
-
-Ini **pola umum** parsing output command di Unix — pipe, filter, extract.
-
-### Simbol di `diff` Unified (`-u`)
-
-Format unified (dipakai di `git diff`, `patch`):
-```
---- file1
-+++ file2
-@@ -1,5 +1,6 @@
- baris sama
--baris dihapus
-+baris ditambah
- baris sama
-```
-
-| Simbol | Arti |
-|---|---|
-| `-` | Baris hanya ada di file1 |
-| `+` | Baris hanya ada di file2 |
-| ` ` (spasi) | Baris sama |
-
-Berguna untuk **patch** — bisa diterapkan dengan `patch -p1 < file.patch`.
 
 ### `diff` dengan "Ignore" Options
 
@@ -343,53 +301,30 @@ Berguna untuk **patch** — bisa diterapkan dengan `patch -p1 < file.patch`.
 | `-B` | Baris kosong |
 | `-Z` | Whitespace di akhir baris |
 
-**Contoh:**
-```bash
-$ diff -iw file1 file2   # ignore case & whitespace
-```
-
-### `comm` — Cara Baca Output
-
-`comm` butuh **2 file sorted**, output **3 kolom**:
-
-```
-file1_only    file2_only    common
-```
-
-| Opsi | Suppress |
-|---|---|
-| `-1` | Kolom 1 (file1 only) |
-| `-2` | Kolom 2 (file2 only) |
-| `-3` | Kolom 3 (common) |
-
-**`comm -13`** = suppress kolom 1 & 3 → tampilkan **file2 only**.
-**`comm -12`** = suppress kolom 1 & 2 → tampilkan **common**.
-**`comm -23`** = suppress kolom 2 & 3 → tampilkan **file1 only**.
-
 ### Real-World Use Cases
 
 - **Config diff:** `diff /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak` — cek perubahan config.
 - **Backup verification:** `diff -r /data /backup/data` — pastikan backup identik.
 - **Deploy check:** `diff -r app-v1 app-v2` — lihat file mana yang berubah.
 - **Code review:** `git diff` (pakai engine `diff` juga).
-- **Log comparison:** `diff log-hari-ini.log log-kemarin.log` — cari anomali.
+- **Security audit:** Bandingkan file binary original vs current → deteksi modifikasi.
 
 ### Kasus Nyata
 
 - **DevOps:** Bandingkan config server A vs server B → cari drift.
 - **Sysadmin:** Bandingkan `/etc` sebelum & sesudah update → lihat yang berubah.
-- **Security:** Bandingkan file binary original vs current → deteksi modifikasi.
 - **Migration:** Bandingkan direktori lama vs baru → pastikan semua file tercopy.
 
 ### Pelajaran Kunci dari Challenge Ini
 
-1. **`diff`** = alat utama membandingkan file.
-2. **`-i`** = ignore case.
-3. **`-r`** = recursive untuk direktori.
-4. **`-q`** = brief — hanya tampilkan file yang berbeda.
-5. **`grep` + `awk`** = parsing output untuk extract info spesifik.
-6. **`comm`** = alternatif untuk file sorted.
-7. **Redirection `>`** = simpan hasil.
+1. **`diff`** = alat utama membandingkan file & direktori.
+2. **`-i`** = ignore case untuk Task 1.
+3. **`-rq`** = recursive + brief untuk direktori.
+4. **`Files differ`** = isi beda; **`Only in`** = file unik.
+5. **`sed` capture group** = extract absolute path dari `Only in`.
+6. **`awk '{print $NF}'`** = ambil nama file saja (kolom terakhir).
+7. **Baca output mentah dulu** sebelum parsing — jangan asumsi formatnya.
+8. **Log grading** kasih clue format yang diinginkan.
 
 ---
 
@@ -400,16 +335,14 @@ file1_only    file2_only    common
 | `diff file1 file2` | Bandingkan 2 file |
 | `diff -i file1 file2` | Ignore case |
 | `diff -u file1 file2` | Unified format |
-| `diff -y file1 file2` | Side-by-side |
 | `diff -r dir1 dir2` | Recursive |
 | `diff -rq dir1 dir2` | Recursive + brief |
-| `diff -w file1 file2` | Ignore whitespace |
-| `cmp file1 file2` | Bandingkan byte-by-byte |
 | `comm file1 file2` | Bandingkan sorted |
 | `comm -13 file1 file2` | Hanya file2 only |
-| `comm -23 file1 file2` | Hanya file1 only |
+| `cmp file1 file2` | Bandingkan byte-by-byte |
 | `grep "pattern"` | Filter baris |
 | `awk '{print $N}'` | Extract kolom |
+| `sed 's/pattern/replace/'` | Substitusi string |
 | `cmd > file` | Redirect overwrite |
 
 **Contoh task lengkap:**
@@ -418,8 +351,8 @@ file1_only    file2_only    common
 # Task 1 — Ignore case
 diff -i fileA.txt fileB.txt > results01.txt
 
-# Task 2 — Recursive, ambil file yang beda (path)
-diff -rq compare01 compare02 | grep "^Files" | awk '{print $2}' > results02.txt
+# Task 2 — Extract absolute path file yang hanya ada di satu sisi
+diff -rq compare01 compare02 | grep "Only in" | sed 's/Only in \(.*\): \(.*\)/\1\/\2/' > results02.txt
 
 # Task 3 — Hanya ada di comdir02 (nama file saja)
 diff -rq comdir01 comdir02 | grep "Only in.*comdir02" | awk '{print $NF}' > results03.txt
@@ -431,6 +364,18 @@ diff -rq comdir01 comdir02 | grep "Only in.*comdir02" | awk '{print $NF}' > resu
 comm -13 <(ls comdir01 | sort) <(ls comdir02 | sort) > results03.txt
 ```
 
+**Cek hasil:**
+
+```bash
+# Lihat output mentah diff (debug)
+diff -rq compare01 compare02
+
+# Lihat hasil parsing
+cat results01.txt
+cat results02.txt
+cat results03.txt
+```
+
 ---
 
 ## 📌 Kesimpulan
@@ -438,9 +383,9 @@ comm -13 <(ls comdir01 | sort) <(ls comdir02 | sort) > results03.txt
 Lab Challenge 4 ini menguji kemampuan **membandingkan file & direktori** — skill penting untuk sysadmin, DevOps, dan developer. Yang diuji:
 
 - **`diff`** dengan opsi `-i` (case), `-r` (recursive), `-q` (brief).
-- **Parsing output** dengan `grep` + `awk` untuk extract info spesifik.
-- **Beda `diff` vs `comm`** — untuk file biasa vs file sorted.
-- **Redirection** untuk menyimpan hasil.
+- **Parsing output** dengan `grep` + `awk` + `sed` untuk extract info spesifik.
+- **Bedakan `Files differ` vs `Only in`** — dua jenis perbedaan yang berbeda.
+- **Extract absolute path** dengan `sed` capture group.
 
 Kemampuan ini adalah **fondasi** untuk:
 - **Verifikasi backup** — pastikan backup identik dengan sumber.
@@ -448,8 +393,8 @@ Kemampuan ini adalah **fondasi** untuk:
 - **Code review** — `git diff` pakai engine yang sama.
 - **Security audit** — deteksi modifikasi file penting.
 
-Yang paling berharga dari challenge ini: **belajar membaca output `diff`**. Format `5c5`, `3a4`, `5d4` awalnya membingungkan, tapi setelah paham — sangat informatif.
+Yang paling berharga dari challenge ini: **pelajaran bahwa asumsi itu bahaya**. Awalnya saya pakai `grep "^Files"` untuk Task 2, tapi ternyata output yang muncul adalah `Only in` — bukan `Files differ`. Setelah baca output mentah, baru tahu format yang benar dan bisa parsing dengan `sed`.
 
-`diff` adalah **salah satu tool paling sering dipakai sysadmin** — hampir setiap kali ada perubahan config, backup, atau migrasi, `diff` akan dipanggil.
+**Motto troubleshooting:** *Jalankan perintah mentah dulu, baca outputnya, baru bikin pipeline.* Jangan asumsi formatnya.
 
 > ⚠️ **Disclaimer:** Catatan ini ditulis ulang berdasarkan pemahaman pribadi dari lab Adinusa. Materi asli tidak didistribusikan.
