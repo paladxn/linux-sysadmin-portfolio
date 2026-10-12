@@ -57,7 +57,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 19.0 | Basic Troubleshooting (Teori) | ✅ | [Lihat](19-troubleshooting/lab-19.0-basic-troubleshooting-theory.md) |
 | 19.1 | Quiz: Troubleshooting Apache | ✅ | [Lihat](19-troubleshooting/lab-19.1-troubleshooting-apache.md) |
 | Challenge 1 | Working with File Content | ✅ | [Lihat](20-challenges/challenge-1-file-content.md) |
-
+| Challenge 2 | Finding Files | ✅ | [Lihat](20-challenges/challenge-2-finding-files.md) |
 
 ## 📖 Referensi Cepat
 
