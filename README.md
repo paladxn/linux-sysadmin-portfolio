@@ -51,6 +51,7 @@ lab, dan skrip latihan yang saya kerjakan sendiri sebagai self reminder yang tel
 | 16.1 | Configure HTTPS Using Self-Signed Certificate | ✅ | [Lihat](14-networking/lab-16.1-apache-https-self-signed.md) |
 | 16.2 | Installing phpMyAdmin with Firewall Protection | ✅ | [Lihat](14-networking/lab-16.2-phpmyadmin-firewalld.md) |
 | 16.3 | Quiz: Securing Port Webserver (Nginx) | ✅ | [Lihat](14-networking/lab-16.3-nginx-custom-port.md) |
+| 17.0 | System Startup & GRUB (Teori) | ✅ | [Lihat](11-kernel-boot/lab-17.0-system-startup-grub-theory.md) |
 
 ## 📖 Referensi Cepat
 
