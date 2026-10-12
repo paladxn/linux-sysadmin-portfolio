@@ -3,7 +3,7 @@
 **Catatan belajar Linux System Administration**
 Dari kursus Adinusa (Lab 3.x – 19.x) + praktik pribadi.
 
-> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security & boot. Bagian 7 = referensi cepat & troubleshooting. Bagian 8 = networking & web server.
+> **Cara pakai:** Bagian 1–2 = fondasi. Bagian 3–4 = sistem & storage. Bagian 5–6 = security & boot. Bagian 7 = referensi cepat & troubleshooting. Bagian 8 = networking & web server. Bagian 9 = challenges.
 
 > **Penanda:** `[OK]` aman · `[!]` hati-hati · `[X]` bahaya
 
@@ -25,8 +25,9 @@ Dari kursus Adinusa (Lab 3.x – 19.x) + praktik pribadi.
 | Web Security | 16.0 – 16.3 | Selesai |
 | System Boot & systemd | 17.0, 18.0 – 18.1 | Selesai |
 | Troubleshooting | 19.0 – 19.1 | Selesai |
+| Challenges | Challenge 1 – 5 | Selesai |
 
-**Terakhir update:** 2026-10-12 (Lab 19.1 Troubleshooting Apache)
+**Terakhir update:** 2026-10-12 (Challenge 5 User Accounts)
 
 ---
 
@@ -39,11 +40,14 @@ Dari kursus Adinusa (Lab 3.x – 19.x) + praktik pribadi.
 - [1.4 Membuat & Menulis File](#14-membuat--menulis-file)
 - [1.5 Nano](#15-nano--editor-ramah-pemula)
 - [1.6 Vim](#16-vim--editor-powerful)
+- [1.7 Find — Mencari File](#17-find--mencari-file)
 
 **Data & Teks**
 - [2.1 Pipe, Filter & Hitung](#21-pipe-filter--hitung)
 - [2.2 Opsi Penting](#22-opsi-penting-yang-wajib-dihafal)
 - [2.3 Kombinasi Pola Umum](#23-kombinasi-pola-yang-sering-dipakai)
+- [2.4 Grep — Text Processing](#24-grep--text-processing)
+- [2.5 Diff — Membandingkan File](#25-diff--membandingkan-file)
 
 **Sistem & Proses**
 - [3.1 Resource Limits](#31-resource-limits-ulimit)
@@ -57,6 +61,7 @@ Dari kursus Adinusa (Lab 3.x – 19.x) + praktik pribadi.
 - [4.4 df & du](#44-disk-usage-df--du)
 - [4.5 Partition](#45-partition-management)
 - [4.6 LVM](#46-lvm-logical-volume-manager)
+- [4.7 Disk Baru + Auto-Mount](#47-disk-baru--auto-mount)
 
 **User & Security**
 - [5.1 Inode & Links](#51-inode--links)
@@ -67,6 +72,8 @@ Dari kursus Adinusa (Lab 3.x – 19.x) + praktik pribadi.
 - [5.6 Kernel & Boot](#56-kernel--boot)
 - [5.7 System Startup & GRUB (Teori)](#57-system-startup--grub-teori)
 - [5.8 systemd Service](#58-systemd-service)
+- [5.9 System Init (Teori)](#59-system-init-teori)
+- [5.10 User Management — Advanced](#510-user-management--advanced)
 
 **Permissions**
 - [6.1 chmod Symbolic](#61-chmod--symbolic-mode)
@@ -201,6 +208,76 @@ $ cd lab5 && pwd
 
 ---
 
+## 1.7 Find — Mencari File
+
+**Konsep:** `find` = cari file berdasarkan kriteria. Tool wajib sysadmin.
+
+| Filter | Opsi | Contoh |
+|---|---|---|
+| Nama | `-name` / `-iname` | `-name "*.txt"` |
+| Type | `-type` | `-type f` (file), `d` (dir) |
+| Permission | `-perm` | `-perm 0644` |
+| Size | `-size` | `-size +8k -size -10k` |
+| User | `-user` | `-user student` |
+| Group | `-group` | `-group root` |
+| Waktu | `-mtime` | `-mtime -7` (7 hari terakhir) |
+| Aksi | `-exec` | `-exec cp {} dest/ \;` |
+
+**Permission di `find`:**
+
+| Cara | Arti |
+|---|---|
+| `-perm 0644` | **Persis** 0644 |
+| `-perm -4000` | **Setidaknya** SUID |
+| `-perm -6000` | **Setidaknya** SUID + SGID |
+| `-perm /u+x` | **Salah satu** bit |
+
+**Size:**
+
+| Format | Arti |
+|---|---|
+| `-size 8k` | Persis 8 KB |
+| `-size +8k` | > 8 KB |
+| `-size -10k` | < 10 KB |
+| `+8191c -10241c` | Range inklusif via byte |
+
+**Operators:**
+
+| Operator | Arti |
+|---|---|
+| `-a` | AND (default) |
+| `-o` | OR |
+| `!` / `-not` | NOT |
+| `\( \)` | Grouping |
+
+**Contoh:**
+
+```bash
+# File SUID + SGID
+find /path -type f -perm -6000
+
+# Mode 0600
+find /path -type f -perm 0600
+
+# Size 8K-10K (inklusif)
+find /path -type f -size +8191c -size -10241c
+
+# .txt bukan milik student
+find /path -name "*.txt" ! -user student
+
+# Copy preserve permission
+find /path -perm 0600 -exec cp -p {} /dest/ \;
+```
+
+**Tips:**
+- **Path dulu, ekspresi kemudian.** `find /path -name "*.txt"` ✅
+- `-perm` numeric butuh 4 digit: `0600`, bukan `600`.
+- `-exec ... \;` (per file) vs `-exec ... +` (batch, lebih cepat).
+- `cp -p` untuk preserve permission + timestamp.
+- **`find -size` pakai pembulatan ke atas** — untuk range inklusif, pakai byte (`c`).
+
+---
+
 # BAGIAN 2 — DATA & TEKS
 
 ## 2.1 Pipe, Filter & Hitung
@@ -260,6 +337,116 @@ $ ls pola* 2>/dev/null
 # Top 20 file/direktori terbesar
 $ du -ah ~ | sort -h | tail -20
 ```
+
+---
+
+## 2.4 Grep — Text Processing
+
+**Konsep:** `grep` = cari baris yang cocok dengan pattern. Alat utama log analysis.
+
+| Perintah | Fungsi |
+|---|---|
+| `grep "pattern" file` | Cari baris mengandung pattern |
+| `grep "^pattern" file` | Baris **diawali** pattern |
+| `grep "pattern$" file` | Baris **diakhiri** pattern |
+| `grep -c "pattern" file` | Hitung jumlah baris cocok |
+| `grep -i "pattern" file` | Case-insensitive |
+| `grep -v "pattern" file` | Invert — baris yang tidak cocok |
+| `grep -n "pattern" file` | Tampilkan nomor baris |
+| `grep -E "p1\|p2" file` | Extended regex (OR) |
+
+**Anchor regex:**
+
+| Pattern | Cocok dengan |
+|---|---|
+| `^abc` | Baris dimulai `abc` |
+| `abc$` | Baris diakhiri `abc` |
+| `^$` | Baris kosong |
+
+**Multi-filter (AND):**
+
+```bash
+# Cara 1: pipe (gampang dibaca)
+$ grep "TRACE" file | grep "router_forward"
+
+# Cara 2: regex OR (efisien)
+$ grep -E "TRACE.*router_forward|router_forward.*TRACE" file
+```
+
+**Simpan hasil:**
+
+```bash
+$ grep "ERROR" app.log > error.log          # overwrite
+$ grep "INFO" app.log >> info.log           # append
+```
+
+**Tips:**
+- `^` = anchor awal baris. Tanpa `^`, pattern cocok di posisi mana saja.
+- `grep -c` untuk hitung cepat, `wc -l` untuk cek jumlah baris file.
+- Pipe lebih mudah dibaca, regex lebih efisien untuk file besar.
+- `grep` default BRE (Basic Regex), `grep -E` untuk ERE.
+
+---
+
+## 2.5 Diff — Membandingkan File
+
+**Konsep:** `diff` = bandingkan file baris per baris. Tool wajib untuk cek perubahan.
+
+| Perintah | Fungsi |
+|---|---|
+| `diff file1 file2` | Bandingkan 2 file |
+| `diff -i file1 file2` | Ignore case |
+| `diff -w file1 file2` | Ignore whitespace |
+| `diff -u file1 file2` | Unified format (patch) |
+| `diff -y file1 file2` | Side-by-side |
+| `diff -r dir1 dir2` | Recursive |
+| `diff -rq dir1 dir2` | Recursive + brief |
+| `comm file1 file2` | Bandingkan sorted |
+| `cmp file1 file2` | Bandingkan byte-by-byte |
+
+**Format output `diff`:**
+
+| Simbol | Arti |
+|---|---|
+| `XcY` | Baris X di file1 **diubah** → baris Y di file2 |
+| `XaY` | Baris Y **ditambahkan** setelah baris X |
+| `XdY` | Baris X **dihapus** |
+| `<` | Baris dari file1 |
+| `>` | Baris dari file2 |
+
+**Untuk direktori (`-rq`) — 2 jenis output:**
+
+```
+Files dir1/file and dir2/file differ      ← isi beda
+Only in dir1: extra.txt                   ← file unik
+```
+
+**Contoh:**
+
+```bash
+# Bandingkan 2 file, ignore case
+diff -i fileA.txt fileB.txt > result.txt
+
+# Bandingkan direktori, ambil file yang isinya beda
+diff -rq dir1 dir2 | grep "^Files" | awk '{print $2}'
+
+# Cari file yang hanya ada di dir2 (nama saja)
+diff -rq dir1 dir2 | grep "Only in.*dir2" | awk '{print $NF}'
+
+# Extract absolute path dari "Only in"
+diff -rq dir1 dir2 | grep "Only in" | sed 's/Only in \(.*\): \(.*\)/\1\/\2/'
+
+# Alternatif: pakai comm untuk file sorted
+comm -13 <(ls dir1 | sort) <(ls dir2 | sort)
+```
+
+**Tips:**
+- `-q` untuk brief — cuma nama file, bukan isi.
+- `-r` untuk recursive directory tree.
+- **Baca output mentah dulu** — bisa `Files differ` atau `Only in`.
+- `awk '{print $NF}'` untuk ambil nama file (kolom terakhir).
+- `comm -13` = file only di argumen kedua.
+- Untuk file binary, pakai `cmp`, bukan `diff`.
 
 ---
 
@@ -470,6 +657,68 @@ $ pgrep -af killing           # atau pakai pgrep
 - `systemctl daemon-reload` setelah edit fstab
 - Perbesar: `lvextend` → `resize2fs`
 - Perkecil: `resize2fs` → `lvreduce`
+
+---
+
+## 4.7 Disk Baru + Auto-Mount
+
+**Alur:** `Tambah disk → Partisi → Format + label → Mount → fstab`
+
+**Langkah lengkap:**
+
+```bash
+# 1. Verifikasi disk
+lsblk
+
+# 2. Buat partisi (GPT, 1 GiB)
+sudo parted /dev/sdd
+(parted) mklabel gpt
+(parted) mkpart primary ext4 1MiB 1025MiB
+(parted) quit
+
+# 3. Format + label
+sudo mkfs -t ext4 -L appcache /dev/sdd1
+
+# 4. Cek label
+sudo blkid /dev/sdd1
+
+# 5. Buat mount point & mount
+sudo mkdir -p /app
+sudo mount LABEL=appcache /app
+
+# 6. Edit fstab (backup dulu!)
+sudo cp /etc/fstab /etc/fstab.bak
+sudo nano /etc/fstab
+# Tambah: LABEL=appcache  /app  ext4  defaults,nofail  0  2
+
+# 7. Test fstab (WAJIB!)
+sudo umount /app
+sudo mount -a
+df -h | grep app
+```
+
+**Format `/etc/fstab`:**
+
+```
+LABEL=appcache  /app  ext4  defaults,nofail  0  2
+```
+
+| Kolom | Arti |
+|---|---|
+| LABEL=xxx | Identifikasi device |
+| /app | Mount point |
+| ext4 | Tipe FS |
+| defaults,nofail | Opsi |
+| 0 | Dump |
+| 2 | Fsck pass |
+
+**Tips:**
+- Pakai **MiB/GiB** (binary), bukan MB/GB.
+- Start partisi di **1MiB** untuk alignment.
+- **LABEL** lebih stabil dari `/dev/sdX`.
+- **`nofail`** untuk disk non-esensial → sistem tetap boot kalau disk hilang.
+- **`mount -a`** WAJIB test sebelum reboot — fstab rusak = gagal boot.
+- Kalau sudah gagal boot: rescue mode → `mount -o remount,rw /` → fix fstab.
 
 ---
 
@@ -764,6 +1013,139 @@ WantedBy=multi-user.target
 
 ---
 
+## 5.9 System Init (Teori)
+
+**Konsep:** `init` = proses pertama user-space. Orkestrator startup.
+
+**Evolusi init:**
+
+| Aspek | SysVinit | Upstart | systemd |
+|---|---|---|---|
+| Model | Serial | Event | Paralel |
+| Startup | Lambat | Sedang | Cepat |
+| Config | Shell script | `.conf` | Unit file |
+| Status | Legacy | Obsolete | **Standard** |
+
+**Runlevel vs Target:**
+
+| Runlevel | Target systemd |
+|---|---|
+| 0 | poweroff.target |
+| 1 | rescue.target |
+| 3 | multi-user.target |
+| 5 | graphical.target |
+| 6 | reboot.target |
+
+**Fitur utama systemd:**
+- Paralelisasi startup
+- Dependency management
+- Socket & D-Bus activation
+- cgroups tracking
+- Binary + config (bukan shell script)
+- Transactional service control
+- SysVinit compatibility
+
+**File konfigurasi:**
+
+| File | Fungsi |
+|---|---|
+| `/etc/hostname` | Hostname |
+| `/etc/vconsole.conf` | Keyboard & font console |
+| `/etc/sysctl.d/*.conf` | Kernel parameter |
+| `/etc/os-release` | Info OS |
+
+**`journalctl` — log systemd:**
+
+| Perintah | Fungsi |
+|---|---|
+| `journalctl` | Semua log |
+| `journalctl -u <svc>` | Log service |
+| `journalctl -f` | Real-time |
+| `journalctl -b` | Sejak boot terakhir |
+| `journalctl -n 50` | 50 baris terakhir |
+
+**Tips:**
+- `systemctl get-default` → cek target default.
+- `systemctl set-default multi-user.target` → ubah target.
+- `systemd-analyze blame` → cek service yang lambat.
+- systemd = standar industri, dipakai hampir semua distro.
+
+---
+
+## 5.10 User Management — Advanced
+
+**Alur lengkap:**
+
+```bash
+# 1. Buat user dengan shell
+sudo useradd -m -s /bin/bash trainer1
+sudo useradd -m -s /bin/bash trainer2
+sudo useradd -m -s /bin/bash trainer3
+
+# 2. Set password non-interaktif (PAKAI KUTIP TUNGGAL!)
+echo 'trainer1:Train!@#123' | sudo chpasswd
+echo 'trainer2:Train!@#123' | sudo chpasswd
+echo 'trainer3:Train!@#123' | sudo chpasswd
+
+# 3. Comment
+sudo usermod -c "Trainer One" trainer1
+
+# 4. Password policy
+sudo chage -M 7 trainer1       # max 7 hari
+sudo usermod -L trainer2       # lock
+sudo chage -d 0 trainer3       # force change
+
+# 5. Group
+sudo groupadd coaches
+sudo usermod -aG coaches trainer1
+sudo usermod -aG coaches trainer2
+
+# 6. Ubah shell
+sudo usermod -s /bin/sh trainer3
+```
+
+**Perintah penting:**
+
+| Perintah | Fungsi |
+|---|---|
+| `useradd -m -s /bin/bash <user>` | Buat user + home + shell |
+| `echo 'user:pass' \| chpasswd` | Set password non-interaktif |
+| `usermod -c "Comment" <user>` | Set comment (GECOS) |
+| `chage -M N <user>` | Max password age |
+| `chage -d 0 <user>` | Force change password |
+| `usermod -L` / `-U` | Lock / unlock |
+| `passwd -l` / `-e` | Lock / expire password |
+| `groupadd -f <group>` | Buat group (idempotent) |
+| `usermod -aG <group> <user>` | Append ke group (**wajib `-a`**) |
+| `usermod -s /bin/sh <user>` | Ubah shell |
+| `chage -l <user>` | Lihat aging info |
+| `passwd -S <user>` | Cek status password |
+| `id <user>` / `groups <user>` | Verifikasi group |
+
+**⚠️ Urutan Sangat Penting:**
+
+```
+1. useradd         → buat user
+2. chpasswd        → set password DULU ←
+3. usermod -c      → comment
+4. chage -M        → policy
+5. usermod -L      → LOCK SETELAH password
+6. chage -d 0      → FORCE CHANGE SETELAH password
+7. groupadd + -aG  → group
+8. usermod -s      → shell
+```
+
+**Kenapa?** `chpasswd` **menghapus** flag `!` (locked) di `/etc/shadow` dan **menimpa** tanggal "last change". Kalau `usermod -L` atau `chage -d 0` dijalankan **sebelum** `chpasswd`, konfigurasinya akan **hilang**.
+
+**Tips:**
+- **`usermod -aG` (append)** vs **`usermod -G` (overwrite)** — jangan salah!
+- Password dengan `!` pakai **kutip tunggal**: `echo 'user:Train!@#123'`.
+- Lock lebih baik daripada delete untuk user production.
+- Group baru aktif setelah **logout-login ulang**.
+- Verifikasi: `passwd -S` untuk status, `chage -l` untuk aging, `id` untuk group.
+
+---
+
 # BAGIAN 6 — PERMISSIONS
 
 ## 6.1 chmod — Symbolic Mode
@@ -930,7 +1312,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | `r` vs `rX` (ACL) | Read-only vs read + execute kondisional |
 | `ip` vs `ifconfig` | Modern vs legacy |
 | `reload` vs `restart` (service) | Baca ulang config vs matikan-nyalakan |
-| HTTP vs HTTPS | Port 80 vs 443, tanpa enkripsi vs dengan SSL/TLS |
+| HTTP vs HTTPS | Port 80 vs 443 |
 | Self-signed vs CA-signed | Warning di browser vs tanpa warning |
 | Firewalld vs UFW | Zone-based vs rule-based |
 | phpMyAdmin vs CLI | GUI web vs terminal MySQL |
@@ -938,7 +1320,9 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Runtime vs Permanent (firewalld) | Sementara vs persistent |
 | BIOS vs UEFI | Legacy vs modern firmware |
 | Runlevel vs Target | Nama lama vs systemd |
-| `start` vs `enable` | Jalankan sekarang vs auto-start saat boot |
+| `start` vs `enable` | Jalankan sekarang vs auto-start |
+| `Files differ` vs `Only in` | Isi beda vs file unik |
+| `diff` vs `comm` vs `cmp` | Baris vs sorted vs byte |
 
 ---
 
@@ -959,10 +1343,11 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | [X] Bagikan private key SSL (`.key`) | Siapa pun bisa impersonate server |
 | [X] Lupa `-nodes` di openssl | Apache minta passphrase tiap restart |
 | [X] Buka phpMyAdmin ke publik tanpa firewall | Target utama attacker |
-| [X] `GRANT ALL PRIVILEGES ON *.* TO 'user'@'%'` di production | Akses penuh dari mana saja |
+| [X] `GRANT ALL PRIVILEGES ON *.* TO 'user'@'%'` | Akses penuh dari mana saja |
 | [X] Edit config Nginx tanpa `nginx -t` | Nginx mati saat reload |
 | [X] Edit `grub.cfg` langsung | Perubahan hilang saat update-grub |
 | [X] Reboot server produksi tanpa alasan | Downtime tidak perlu |
+| [X] Password dengan `!` pakai double quote | Bash error: event not found |
 
 ---
 
@@ -992,6 +1377,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Package konflik (MySQL/MariaDB) | Purge semua, hapus repo, install ulang |
 | Systemd service gagal | `systemctl status <svc>`, `journalctl -u <svc>` |
 | GRUB tidak muncul | Cek `/etc/default/grub`, `update-grub` |
+| Bash `!` error | Pakai kutip tunggal: `echo 'user:pass!@#'` |
 
 ---
 
@@ -1021,6 +1407,10 @@ $ chmod 1777 dir/     # Sticky (numeric)
 22. **Backup unit file** sebelum ubah service
 23. **Ubah satu hal, test** — jangan ubah banyak sekaligus
 24. **Baca error log** dulu sebelum bertindak
+25. **Password dengan `!` → pakai kutip tunggal**
+26. **`chpasswd` hapus lock & force change** — set password dulu, baru policy
+27. **`find -size` pakai pembulatan** — untuk range inklusif, pakai byte (`c`)
+28. **Baca output `diff` mentah dulu** — bisa `Files differ` atau `Only in`
 
 ---
 
@@ -1041,25 +1431,32 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **chmod** | Change mode — ubah permission |
 | **chown** | Change owner |
 | **chgrp** | Change group |
+| **chpasswd** | Set password non-interaktif |
 | **CIDR** | Classless Inter-Domain Routing |
+| **comm** | Bandingkan file sorted |
+| **cmp** | Bandingkan byte-by-byte |
 | **Cron** | Scheduler tugas berkala |
 | **CSR** | Certificate Signing Request |
 | **Daemon** | Proses background |
 | **daemon-reload** | Baca ulang unit file systemd |
 | **df** | Disk Free |
+| **diff** | Bandingkan file baris per baris |
 | **dig** | DNS lookup tool |
 | **DNS** | Domain Name System |
 | **DocumentRoot** | Direktori file web |
 | **du** | Disk Usage |
 | **enable** | Auto-start service saat boot |
 | **ext4** | Filesystem default |
+| **find** | Cari file berdasarkan kriteria |
 | **Firewalld** | Firewall modern dengan konsep zone |
 | **FQDN** | Fully Qualified Domain Name |
 | **fstab** | File System Table |
 | **GECOS** | Comment di `/etc/passwd` |
 | **GID** | Group ID |
+| **grep** | Global Regular Expression Print |
 | **GRUB** | Bootloader default Linux |
 | **Hard link** | Nama tambahan ke inode sama |
+| **History expansion** | Ekspansi `!` di bash — sumber error |
 | **Hostname** | Nama perangkat di jaringan |
 | **HTTPS** | HTTP + SSL/TLS (port 443) |
 | **ifconfig** | Legacy network tool (deprecated) |
@@ -1099,6 +1496,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **Root** | Superuser |
 | **Routing** | Pemilihan jalur paket |
 | **Runlevel** | Level operasi SysVinit (0–6) |
+| **sed** | Stream editor — substitusi string |
 | **Self-signed** | Certificate yang ditandatangani sendiri |
 | **SELinux/AppArmor** | Mandatory access control |
 | **SGID** | Set Group ID |
@@ -1123,9 +1521,10 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | **unit file** | File definisi service systemd |
 | **Vim** | Editor powerful |
 | **VirtualHost** | Konfigurasi domain di Apache |
+| **wc** | Word count |
 | **www-data** | User default Apache/Nginx |
 | **Zombie** | Proses selesai belum di-reap |
-| **Zone (firewalld)** | Kumpulan aturan firewall (public, trusted, home, dll) |
+| **Zone (firewalld)** | Kumpulan aturan firewall |
 
 ---
 
@@ -1136,7 +1535,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Tidak boot | Rescue mode dari GRUB |
 | Lupa password root | Rescue → `passwd` |
 | Disk penuh | `df -h` → `du -sh /* \| sort -h` |
-| Fork error | `ulimit -u` (bisa naikkan sampai `ulimit -Hu`) |
+| Fork error | `ulimit -u` (naikkan sampai `ulimit -Hu`) |
 | Command hang | `CTRL + C` |
 | Vim stuck | `Esc` → `:q!` |
 | Nano stuck | `CTRL + X` → `N` |
@@ -1152,6 +1551,7 @@ $ chmod 1777 dir/     # Sticky (numeric)
 | Service stuck | Kill proses, restart VM kalau perlu |
 | Systemd service gagal | `journalctl -u <svc> -n 50 --no-pager` |
 | GRUB error | Boot ke Live USB → `grub-install` + `update-grub` |
+| Bash `!` error | Pakai kutip tunggal |
 
 > **Tips:** Kalau panik — jangan ketik apapun dulu. Tarik napas, baca error, baru cari solusi.
 
@@ -1805,7 +2205,7 @@ http://<IP-VM>:8088
 | `firewall-cmd --list-all --zone=public` | Lihat konfigurasi zone |
 | `firewall-cmd --add-interface=<if> --permanent` | Assign interface ke zone |
 | `firewall-cmd --add-port=<port>/tcp --zone=public --permanent` | Buka port |
-| `firewall-cmd --add-service=<service> --permanent` | Buka service (http, ssh, dll) |
+| `firewall-cmd --add-service=<service> --permanent` | Buka service |
 | `firewall-cmd --remove-port=<port>/tcp --permanent` | Tutup port |
 | `firewall-cmd --reload` | Reload konfigurasi |
 
@@ -1971,8 +2371,15 @@ curl http://localhost:8080
 
 | Tanggal | Update |
 |---|---|
+| 2026-10-12 | Tambah 5.10 User Management Advanced (Challenge 5) |
+| 2026-10-12 | Tambah 2.5 Diff comparing files (Challenge 4) |
+| 2026-10-12 | Tambah 4.7 Disk + Auto-Mount (Challenge 3) |
+| 2026-10-12 | Tambah 1.7 Find command (Challenge 2) |
+| 2026-10-12 | Tambah 2.4 Grep text processing (Challenge 1) |
+| 2026-10-12 | Fix encoding — emoji & karakter khusus |
 | 2026-10-12 | Tambah 7.8 Basic Troubleshooting teori (Lab 19.0) |
 | 2026-10-12 | Tambah 7.7 Troubleshooting Apache (Lab 19.1) |
+| 2026-10-12 | Tambah 5.9 System Init teori (Lab 18.0) |
 | 2026-10-12 | Tambah 5.8 systemd Service (Lab 18.1) |
 | 2026-10-12 | Tambah 5.7 System Startup & GRUB teori (Lab 17.0) |
 | 2026-10-11 | Tambah 8.9 Firewalld & Zone teori (Lab 16.0) |
@@ -2012,7 +2419,9 @@ curl http://localhost:8080
 ## Referensi Lab
 
 - **1.x:** Lab 3.1 – 3.4 (File, Directory, Editor, Pipe)
-- **2.x:** Lab 3.3, 3.4 (Pipe, Wildcard)
+- **1.7:** Challenge 2 (Finding Files)
+- **2.4:** Challenge 1 (Working with File Content)
+- **2.5:** Challenge 4 (Comparing Files)
 - **3.1:** Lab 4.1 – 4.2 (Resource Limits)
 - **3.2:** Lab 5.1 (Process Management)
 - **3.3:** Lab 7.1 (Monitoring)
@@ -2022,6 +2431,7 @@ curl http://localhost:8080
 - **4.4:** Lab 9.2 (df/du)
 - **4.5:** Lab 9.3 (Partition)
 - **4.6:** Lab 10.1 (LVM)
+- **4.7:** Challenge 3 (Working with Partition)
 - **5.1:** Lab 8.1 – 8.3 (Inode, Hard Link, Symlink)
 - **5.2:** Lab 12.1, 12.5 (User & Group)
 - **5.3:** Lab 12.3 (Password Aging)
@@ -2030,6 +2440,8 @@ curl http://localhost:8080
 - **5.6:** Lab 11.1 (Kernel & Boot)
 - **5.7:** Lab 17.0 (System Startup & GRUB Teori)
 - **5.8:** Lab 18.1 (systemd Service)
+- **5.9:** Lab 18.0 (System Init Teori)
+- **5.10:** Challenge 5 (Manage User Accounts)
 - **6.1:** Lab 13.1 (Chmod Symbolic)
 - **6.2:** Lab 13.2 (Chmod Octal)
 - **6.3:** Lab 13.3 (ACL)
